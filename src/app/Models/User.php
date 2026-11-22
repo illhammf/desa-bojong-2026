@@ -7,6 +7,7 @@ use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasAvatar;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
@@ -25,6 +26,8 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
         'avatar_url',
         'name',
         'email',
+        'no_hp',
+        'status_akun',
         'password',
     ];
 
@@ -62,8 +65,31 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
         }
     }
 
+    /** Profil tambahan per peran (SRS 6.3). Super Admin tidak punya tabel profil. */
+    public function admin(): HasOne
+    {
+        return $this->hasOne(Admin::class, 'user_id');
+    }
+
+    public function petugas(): HasOne
+    {
+        return $this->hasOne(Petugas::class, 'user_id');
+    }
+
+    public function masyarakat(): HasOne
+    {
+        return $this->hasOne(Masyarakat::class, 'user_id');
+    }
+
+    public function isAktif(): bool
+    {
+        return $this->status_akun === 'aktif';
+    }
+
+    /** Panel hanya untuk pengelola yang aktif. Masyarakat ditolak (FR-32). */
     public function canAccessPanel(Panel $panel): bool
     {
-        return true;
+        return $this->isAktif()
+            && $this->hasAnyRole(['petugas', 'admin', 'super_admin']);
     }
 }
