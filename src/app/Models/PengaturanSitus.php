@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Throwable;
 
 class PengaturanSitus extends Model
 {
@@ -19,9 +20,25 @@ class PengaturanSitus extends Model
         'langkah_alur' => 'array',
     ];
 
+    private static ?self $memo = null;
+
     /** Pengaturan hanya satu baris. Ambil barisnya, atau objek kosong bila belum ada. */
     public static function ambil(): self
     {
-        return static::query()->first() ?? new static();
+        if (static::$memo !== null) {
+            return static::$memo;
+        }
+
+        try {
+            return static::$memo = static::query()->first() ?? new static();
+        } catch (Throwable) {
+            // Tabel belum ada (misalnya sebelum migrate): jangan sampai memutus halaman.
+            return new static();
+        }
+    }
+
+    public static function lupakan(): void
+    {
+        static::$memo = null;
     }
 }
