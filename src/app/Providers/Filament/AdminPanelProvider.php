@@ -21,6 +21,7 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Joaopaulolndev\FilamentEditProfile\Pages\EditProfilePage;
+use App\Models\PengaturanSitus;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -30,6 +31,10 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
+            ->brandName(fn (): string => PengaturanSitus::ambil()->nama_situs ?: config('app.name'))
+            ->brandLogo(fn (): ?string => ($logo = PengaturanSitus::ambil()->logo) ? asset('storage/' . $logo) : null)
+            ->brandLogoHeight('2.5rem')
+            ->favicon(fn (): ?string => ($logo = PengaturanSitus::ambil()->logo) ? asset('storage/' . $logo) : null)
             ->spa()
             ->login()
             ->passwordReset()
@@ -52,8 +57,10 @@ class AdminPanelProvider extends PanelProvider
                 \Awcodes\Overlook\Widgets\OverlookWidget::class,
             ])
             ->navigationGroups([
-                NavigationGroup::make()
-                    ->label('Administration'),
+                NavigationGroup::make()->label('Pelayanan'),
+                NavigationGroup::make()->label('Master Data'),
+                NavigationGroup::make()->label('Pengaturan'),
+                NavigationGroup::make()->label('Administration'),
             ])
             ->userMenuItems([
                 'profile' => MenuItem::make()
