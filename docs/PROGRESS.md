@@ -69,7 +69,7 @@ Legenda: [x] terkonfirmasi berhasil, [~] kode sudah diberikan tapi belum dikonfi
 - [x] 10 model + relasi (`PengaturanSitus`, `Admin`, `Petugas`, `Masyarakat`, `JenisLayanan`, `Persyaratan`, `Permohonan`, `IsianPermohonan`, `Dokumen`, `RiwayatStatus`), diuji lewat tinker
 - [x] `User.php` (fillable, relasi profil, `canAccessPanel()` berbasis role). Teruji: petugas masuk, warga ditolak.
 - [x] `RoleSeeder` (4 role), `UserSeeder` (akun demo: superadmin/admin/petugas/warga @demo.test, kata sandi `password`), `DatabaseSeeder`
-- [~] `JenisLayananSeeder` (20 layanan), `PersyaratanSeeder` (51 persyaratan, SRS 6.4), `PengaturanSitusSeeder`, `PermohonanSeeder` (3 data contoh, hanya env local). Belum dikonfirmasi.
+- [x] Seeder final dan teruji: `JenisLayananSeeder` (20 layanan), `PersyaratanSeeder` (51 persyaratan), `PengaturanSitusSeeder` (1 baris), `PermohonanSeeder` (3 data contoh, hanya env local)
 - [x] Shield dicek: super_admin.enabled=true, define_via_gate=false (tidak ada bypass Gate otomatis). Permission verifikasi tetap tidak diberikan ke super_admin. Perlu diuji nanti.
 - [x] `https://desa-bojong.test/admin/login` terbuka (login Filament tampil)
 - [ ] `dcf` untuk JenisLayanan, Permohonan, User; halaman khusus PengaturanSitus
@@ -89,8 +89,8 @@ Stub controller kosong (JenisLayanan, Permohonan, Dokumen) belum diisi.
 - Desain Figma perlu disesuaikan: batas 2 MB -> 5 MB, hapus teks Dukcapil/notifikasi, tambah kolom alamat di registrasi, ganti "SIPADES".
 
 ## 9. Langkah Berikutnya
-1. Konfirmasi hasil `dca migrate:fresh --seed` dan angka tinker (layanan 20, persyaratan 51, pengaturan 1, permohonan 3).
-2. Jalankan `dcf JenisLayanan`, `dcf Permohonan`, `dcf User`, lalu rapikan resource (Persyaratan sebagai relation manager).
+1. Jalankan `dcf JenisLayanan`, periksa hasilnya, lalu rapikan resource (Persyaratan sebagai relation manager, bukan resource tersendiri).
+2. `dcf Permohonan` dan `dcf User`, lalu rapikan (isian, dokumen, riwayat di halaman detail permohonan).
 3. Buat halaman Filament Pengaturan Situs dan Shield permission per peran (verifikasi hanya untuk petugas).
 4. Halaman Blade masyarakat: beranda, layanan, registrasi, login, formulir dinamis.
 
