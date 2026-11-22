@@ -2,9 +2,55 @@
 
 namespace App\Models;
 
+use App\Enums\TipePersyaratan;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Persyaratan extends Model
 {
-    //
+    protected $table = 'persyaratan';
+
+    protected $fillable = [
+        'jenis_layanan_id', 'nama_persyaratan', 'tipe_persyaratan', 'tipe_input',
+        'opsi', 'wajib', 'keterangan', 'urutan', 'aktif',
+    ];
+
+    protected $casts = [
+        'tipe_persyaratan' => TipePersyaratan::class,
+        'opsi' => 'array',
+        'wajib' => 'boolean',
+        'aktif' => 'boolean',
+    ];
+
+    public function scopeAktif(Builder $query): Builder
+    {
+        return $query->where('aktif', true);
+    }
+
+    public function scopeIsian(Builder $query): Builder
+    {
+        return $query->where('tipe_persyaratan', TipePersyaratan::Isian->value);
+    }
+
+    public function scopeDokumen(Builder $query): Builder
+    {
+        return $query->where('tipe_persyaratan', TipePersyaratan::Dokumen->value);
+    }
+
+    public function layanan(): BelongsTo
+    {
+        return $this->belongsTo(JenisLayanan::class, 'jenis_layanan_id');
+    }
+
+    public function isianPermohonan(): HasMany
+    {
+        return $this->hasMany(IsianPermohonan::class, 'persyaratan_id');
+    }
+
+    public function dokumen(): HasMany
+    {
+        return $this->hasMany(Dokumen::class, 'persyaratan_id');
+    }
 }
