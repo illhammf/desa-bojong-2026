@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Resources\JenisLayananResource\Pages;
 
 use App\Filament\Admin\Resources\JenisLayananResource;
+use App\Models\JenisLayanan;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 
@@ -13,7 +14,13 @@ class EditJenisLayanan extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            Actions\DeleteAction::make()
+                ->before(fn ($action, JenisLayanan $record) => JenisLayananResource::cegahHapusJikaDipakai($action, $record)),
         ];
+    }
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
     }
 }
