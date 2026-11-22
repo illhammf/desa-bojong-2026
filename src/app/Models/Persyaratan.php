@@ -24,6 +24,16 @@ class Persyaratan extends Model
         'aktif' => 'boolean',
     ];
 
+    protected static function booted(): void
+    {
+        // Persyaratan baru otomatis diletakkan di urutan paling bawah pada layanannya.
+        static::creating(function (Persyaratan $p) {
+            if (empty($p->urutan)) {
+                $p->urutan = (int) static::where('jenis_layanan_id', $p->jenis_layanan_id)->max('urutan') + 1;
+            }
+        });
+    }
+
     public function scopeAktif(Builder $query): Builder
     {
         return $query->where('aktif', true);
