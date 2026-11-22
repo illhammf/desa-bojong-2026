@@ -70,8 +70,8 @@ Legenda: [x] terkonfirmasi berhasil, [~] kode sudah diberikan tapi belum dikonfi
 - [ ] `User.php`: tambah fillable (no_hp, status_akun), relasi profil, `canAccessPanel()` berbasis role. Saat ini masih `return true`.
 - [ ] `RoleSeeder` (sekarang hanya `super_admin` + `user`), `UserSeeder`/`AkunAwalSeeder`, `DatabaseSeeder`
 - [ ] Seeder 20 layanan + persyaratannya (sumber: SRS bab 6.4), seeder `PengaturanSitus`
-- [ ] Hasil cek Shield `config/filament-shield.php` (apakah ada bypass `super_admin`, untuk BR-33)
-- [ ] Cek `https://desa-bojong.test/admin` bisa dibuka
+- [x] Shield dicek: super_admin.enabled=true, define_via_gate=false (tidak ada bypass Gate otomatis). Permission verifikasi tetap tidak diberikan ke super_admin. Perlu diuji nanti.
+- [x] `https://desa-bojong.test/admin/login` terbuka (login Filament tampil)
 - [ ] `dcf` untuk JenisLayanan, Permohonan, User; halaman khusus PengaturanSitus
 - [ ] Halaman Blade Masyarakat, alur pengajuan, verifikasi petugas, laporan
 
