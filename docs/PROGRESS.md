@@ -81,8 +81,8 @@ Legenda: [x] terkonfirmasi berhasil, [~] kode sudah diberikan tapi belum dikonfi
 - [x] `PengaturanSitusPage` + branding panel dinamis (teruji di browser: nama/logo/favicon dari `pengaturan_situs`, petugas tidak bisa akses). Akses masih berbasis role admin/super_admin, nanti dialihkan ke permission Shield.
 - [x] Permohonan: `PermohonanResource` (index + view), aksi status, `DokumenRelationManager`, `RiwayatRelationManager`, `AlurStatusService`, `DokumenController`. Teruji (tinker + browser, dikonfirmasi pengguna).
 - [x] Kelola Akun: `UserResource` + `PenggunaService` + `UserPolicy` + `HakAksesSeeder`. Teruji (tinker + browser, dikonfirmasi pengguna).
-- [~] Dashboard per peran: `App\Filament\Admin\Pages\Dashboard` (menggantikan dashboard bawaan, daftar widget eksplisit) + widget `StatistikPetugasWidget`, `StatistikPengelolaWidget`, `StatusPermohonanChart`, `VolumeLayananChart`, `PermohonanTerbaruWidget` (admin/super admin tanpa tombol Periksa). Belum dikonfirmasi.
-- [ ] Halaman Laporan (rekap per layanan/status, filter periode)
+- [x] Dashboard per peran (teruji, dikonfirmasi pengguna): `App\Filament\Admin\Pages\Dashboard` (menggantikan dashboard bawaan, daftar widget eksplisit) + widget `StatistikPetugasWidget`, `StatistikPengelolaWidget`, `StatusPermohonanChart`, `VolumeLayananChart`, `PermohonanTerbaruWidget` (admin/super admin tanpa tombol Periksa). Belum dikonfirmasi.
+- [~] `LaporanPage` (petugas, admin, super admin): filter periode/layanan/status, kartu per status, rekap layanan x status, tabel rincian; Periksa hanya untuk petugas. Ekspor = Versi 1.1. Belum dikonfirmasi.
 Stub controller kosong (JenisLayanan, Permohonan, Dokumen) belum diisi.
 - [ ] Halaman Blade Masyarakat, alur pengajuan, verifikasi petugas, laporan
 
@@ -99,10 +99,10 @@ Stub controller kosong (JenisLayanan, Permohonan, Dokumen) belum diisi.
 - Desain Figma perlu disesuaikan: batas 2 MB -> 5 MB, hapus teks Dukcapil/notifikasi, tambah kolom alamat di registrasi, ganti "SIPADES".
 
 ## 9. Langkah Berikutnya
-1. Konfirmasi dashboard (tinker angka + 6 uji browser).
-2. Halaman Laporan (petugas, admin, super admin): filter periode/layanan/status, ringkasan per status, volume per layanan, tabel rincian permohonan. Ekspor Excel/PDF = Versi 1.1.
-3. Rapikan menu: cek urutan grup (Pelayanan, Master Data, Pengaturan, Administration), halaman Role Shield dan Log Aktivitas, widget bawaan yang tersisa (`LatestAccessLogs`).
-4. Halaman Blade masyarakat (registrasi, login, beranda, layanan, formulir dinamis, status, perbaikan) + pakai `AlurStatusService` untuk pengajuan dan perbaikan, nomor pengajuan `REG-KODE-TAHUN-URUT` dibuat dalam transaksi (unik tahun+urut).
+1. Konfirmasi Laporan (tinker = 5 + 6 uji browser).
+2. Rapikan menu: urutan grup (Pelayanan, Master Data, Pengaturan, Administration), halaman Role Shield dan Log Aktivitas, widget bawaan yang masih tersisa (`LatestAccessLogs`), alihkan `bolehKelola()` dan `canAccess()` ke permission bila perlu.
+3. Halaman Blade masyarakat: registrasi (NIK unik, alamat), login satu halaman semua peran (ganti rute sementara `login`), beranda, daftar + detail layanan, formulir dinamis dari tabel `persyaratan`, unggah dokumen (5 MB, disk privat), status permohonan, perbaikan. Gunakan `AlurStatusService`; nomor pengajuan `REG-KODE-TAHUN-URUT` dibuat dalam transaksi (unik tahun+urut).
+4. Uji menyeluruh alur (warga ajukan -> petugas periksa -> perbaikan -> proses -> siap diambil) dan uji keamanan akses dokumen.
 
 ## 10. Prompt Lanjut untuk Claude Baru
 "Lanjutkan proyek Desa Bojong dari file PROGRESS.md ini. Jangan mulai dari awal dan jangan ubah keputusan di bagian 4.
