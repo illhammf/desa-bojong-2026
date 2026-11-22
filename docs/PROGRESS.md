@@ -27,6 +27,7 @@
 - `dcf` baru dijalankan setelah migration DAN seeder final (dcf membaca kolom tabel).
 - Nama tabel tidak jamak dan ditulis eksplisit di model (`protected $table`).
 - Alias terminal: `dcu`, `dcd`, `dca <artisan>`, `dci`, `dcp "pesan"`, `dcm`, `dcf`, `dcr`.
+- Struktur Filament: resource di `src/app/Filament/Admin/Resources`, nama halaman list memakai "s" (contoh `ListJenisLayanans`), relation manager di `.../NamaResource/RelationManagers`. Menu dikelompokkan: Master Data, Pelayanan, Pengelolaan.
 
 ## 4. Keputusan yang Dipertahankan
 **Bisnis**
@@ -72,7 +73,9 @@ Legenda: [x] terkonfirmasi berhasil, [~] kode sudah diberikan tapi belum dikonfi
 - [x] Seeder final dan teruji: `JenisLayananSeeder` (20 layanan), `PersyaratanSeeder` (51 persyaratan), `PengaturanSitusSeeder` (1 baris), `PermohonanSeeder` (3 data contoh, hanya env local)
 - [x] Shield dicek: super_admin.enabled=true, define_via_gate=false (tidak ada bypass Gate otomatis). Permission verifikasi tetap tidak diberikan ke super_admin. Perlu diuji nanti.
 - [x] `https://desa-bojong.test/admin/login` terbuka (login Filament tampil)
-- [ ] `dcf` untuk JenisLayanan, Permohonan, User; halaman khusus PengaturanSitus
+- [x] `dcf JenisLayanan` (resource dasar di `app/Filament/Admin/Resources`)
+- [~] `JenisLayananResource` dikustomisasi + `PersyaratanRelationManager` (kode diberikan, belum dikonfirmasi). Aturan: layanan yang punya permohonan tidak bisa dihapus, aktif/nonaktif lewat tombol berkonfirmasi, kode terkunci bila sudah dipakai.
+- [ ] `PermohonanResource` (verifikasi petugas), penyesuaian `UserResource` bawaan boilerplate (BUKAN `dcf User`, sudah ada), halaman Pengaturan Situs, branding panel dinamis
 Stub controller kosong (JenisLayanan, Permohonan, Dokumen) belum diisi.
 - [ ] Halaman Blade Masyarakat, alur pengajuan, verifikasi petugas, laporan
 
@@ -89,10 +92,12 @@ Stub controller kosong (JenisLayanan, Permohonan, Dokumen) belum diisi.
 - Desain Figma perlu disesuaikan: batas 2 MB -> 5 MB, hapus teks Dukcapil/notifikasi, tambah kolom alamat di registrasi, ganti "SIPADES".
 
 ## 9. Langkah Berikutnya
-1. Jalankan `dcf JenisLayanan`, periksa hasilnya, lalu rapikan resource (Persyaratan sebagai relation manager, bukan resource tersendiri).
-2. `dcf Permohonan` dan `dcf User`, lalu rapikan (isian, dokumen, riwayat di halaman detail permohonan).
-3. Buat halaman Filament Pengaturan Situs dan Shield permission per peran (verifikasi hanya untuk petugas).
-4. Halaman Blade masyarakat: beranda, layanan, registrasi, login, formulir dinamis.
+1. Konfirmasi uji JenisLayananResource + PersyaratanRelationManager (tinker urutan = 3, uji di browser).
+2. Baca `AdminPanelProvider` (lokasi discover pages, branding), lalu buat halaman Pengaturan Situs dan branding panel dari tabel `pengaturan_situs`.
+3. `dcf Permohonan` lalu rapikan: tabel antrean petugas, halaman detail verifikasi (isian, dokumen, riwayat), aksi ubah status sesuai `StatusPermohonan::transisi()`.
+4. Sesuaikan `UserResource` bawaan: role, profil per peran (admin/petugas/masyarakat), status akun.
+5. Shield: `shield:generate`, atur permission per role lewat seeder (verifikasi hanya `petugas`, tidak untuk `admin` dan `super_admin`), uji BR-05 dan BR-33.
+6. Halaman Blade masyarakat.
 
 ## 10. Prompt Lanjut untuk Claude Baru
 "Lanjutkan proyek Desa Bojong dari file PROGRESS.md ini. Jangan mulai dari awal dan jangan ubah keputusan di bagian 4.
