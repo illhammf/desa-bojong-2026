@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\StatusVerifikasiDokumen;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -15,6 +16,7 @@ class Dokumen extends Model
     ];
 
     protected $casts = [
+        'status_verifikasi' => StatusVerifikasiDokumen::class,
         'tanggal_upload' => 'datetime',
     ];
 
