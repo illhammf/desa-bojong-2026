@@ -65,18 +65,17 @@ Legenda: [x] terkonfirmasi berhasil, [~] kode sudah diberikan tapi belum dikonfi
 - [x] Boilerplate dan kontainer jalan (`desa-bojong_php`, `_nginx`, `_db` sehat)
 - [x] BRD, PRD, diagram 6.6 dan 6.7 selesai dan ter-commit
 - [x] Migration: 11 file (batch 2) sukses `dca migrate`
-- [~] Enum `app/Enums/StatusPermohonan.php` dan `TipePersyaratan.php`
-- [~] Model: PengaturanSitus, Admin, Petugas, Masyarakat, JenisLayanan, Persyaratan, Permohonan, IsianPermohonan, Dokumen, RiwayatStatus
-- [ ] `User.php`: tambah fillable (no_hp, status_akun), relasi profil, `canAccessPanel()` berbasis role. Saat ini masih `return true`.
-- [ ] `RoleSeeder` (sekarang hanya `super_admin` + `user`), `UserSeeder`/`AkunAwalSeeder`, `DatabaseSeeder`
-- [ ] Seeder 20 layanan + persyaratannya (sumber: SRS bab 6.4), seeder `PengaturanSitus`
+- [x] Enum `StatusPermohonan` dan `TipePersyaratan` (`app/Enums`), terbukti lewat tinker
+- [x] 10 model + relasi (`PengaturanSitus`, `Admin`, `Petugas`, `Masyarakat`, `JenisLayanan`, `Persyaratan`, `Permohonan`, `IsianPermohonan`, `Dokumen`, `RiwayatStatus`), diuji lewat tinker
+- [x] `User.php` (fillable, relasi profil, `canAccessPanel()` berbasis role). Teruji: petugas masuk, warga ditolak.
+- [x] `RoleSeeder` (4 role), `UserSeeder` (akun demo: superadmin/admin/petugas/warga @demo.test, kata sandi `password`), `DatabaseSeeder`
+- [~] `JenisLayananSeeder` (20 layanan), `PersyaratanSeeder` (51 persyaratan, SRS 6.4), `PengaturanSitusSeeder`, `PermohonanSeeder` (3 data contoh, hanya env local). Belum dikonfirmasi.
 - [x] Shield dicek: super_admin.enabled=true, define_via_gate=false (tidak ada bypass Gate otomatis). Permission verifikasi tetap tidak diberikan ke super_admin. Perlu diuji nanti.
 - [x] `https://desa-bojong.test/admin/login` terbuka (login Filament tampil)
 - [ ] `dcf` untuk JenisLayanan, Permohonan, User; halaman khusus PengaturanSitus
+Stub controller kosong (JenisLayanan, Permohonan, Dokumen) belum diisi.
 - [ ] Halaman Blade Masyarakat, alur pengajuan, verifikasi petugas, laporan
 
-Stub kosong dari `dcm`/`make:model -ms` yang belum diisi: seeder (Admin, Petugas, Masyarakat, Persyaratan, JenisLayanan,
-Permohonan, Dokumen, IsianPermohonan, RiwayatStatus, PengaturanSitus, AkunAwal) dan controller (JenisLayanan, Permohonan, Dokumen).
 
 ## 7. Rencana Filament (setelah migration + seeder final)
 - Resource: JenisLayanan (Persyaratan sebagai relation manager), Permohonan (isian, dokumen, riwayat di halaman detail), User.
@@ -84,17 +83,16 @@ Permohonan, Dokumen, IsianPermohonan, RiwayatStatus, PengaturanSitus, AkunAwal) 
 - Permission verifikasi permohonan TIDAK diberikan ke `admin` maupun `super_admin`.
 
 ## 8. Hal yang Belum Diputuskan
-- Kode singkat untuk 20 layanan (di Figma tidak konsisten: LAY-01, SKU-01, ADM-SKU-01).
+- Kode 20 layanan sudah diusulkan di `JenisLayananSeeder` (DOMY, DOMU, KK, KTP, PND, SKTM, BDN, MNS, MNB, WLI, BMN, AKT, KLR, KMT, WRS, BMR, KRM, DOM, SIU, UMM), bisa diubah dari Filament.
 - Pengaturan situs belum tercantum di BRD/PRD, perlu ditambahkan singkat ke dokumen.
 - Konfirmasi desa soal persyaratan kondisional.
 - Desain Figma perlu disesuaikan: batas 2 MB -> 5 MB, hapus teks Dukcapil/notifikasi, tambah kolom alamat di registrasi, ganti "SIPADES".
 
 ## 9. Langkah Berikutnya
-1. Konfirmasi enum dan model: `ls src/app/Enums src/app/Models`.
-2. Tempel `cat src/database/seeders/UserSeeder.php` dan hasil `sed -n 15,35p src/config/filament-shield.php`.
-3. Claude menulis ulang `User.php`, `RoleSeeder`, `UserSeeder`, `DatabaseSeeder`.
-4. Seeder 20 layanan + persyaratan dari SRS bab 6.4, lalu seeder pengaturan situs.
-5. `dca migrate:fresh --seed`, cek hasilnya, baru `dcf`.
+1. Konfirmasi hasil `dca migrate:fresh --seed` dan angka tinker (layanan 20, persyaratan 51, pengaturan 1, permohonan 3).
+2. Jalankan `dcf JenisLayanan`, `dcf Permohonan`, `dcf User`, lalu rapikan resource (Persyaratan sebagai relation manager).
+3. Buat halaman Filament Pengaturan Situs dan Shield permission per peran (verifikasi hanya untuk petugas).
+4. Halaman Blade masyarakat: beranda, layanan, registrasi, login, formulir dinamis.
 
 ## 10. Prompt Lanjut untuk Claude Baru
 "Lanjutkan proyek Desa Bojong dari file PROGRESS.md ini. Jangan mulai dari awal dan jangan ubah keputusan di bagian 4.
