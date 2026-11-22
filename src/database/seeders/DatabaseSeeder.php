@@ -2,8 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -16,6 +14,14 @@ class DatabaseSeeder extends Seeder
         $this->call([
             RoleSeeder::class,
             UserSeeder::class,
+            JenisLayananSeeder::class,
+            PersyaratanSeeder::class,
+            PengaturanSitusSeeder::class,
         ]);
+
+        // Data contoh hanya untuk pengembangan lokal
+        if (app()->environment('local')) {
+            $this->call(PermohonanSeeder::class);
+        }
     }
 }
