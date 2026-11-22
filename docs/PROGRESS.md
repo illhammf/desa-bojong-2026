@@ -47,6 +47,7 @@
 - Web dinamis: persyaratan isian bisa ditambah dari Filament (`tipe_input`, `opsi`), konten situs lewat tabel `pengaturan_situs` (1 baris).
 - `APP_LOCALE=id`. `canAccessPanel()` harus menolak masyarakat.
 - `APP_TIMEZONE=Asia/Jakarta`. Perubahan status HANYA lewat `App\Services\AlurStatusService::ubah()` (cek role petugas, transisi enum, catatan wajib, dokumen harus Sesuai sebelum Diproses). Dokumen di disk `local` (privat), dibuka lewat `DokumenController` (pemilik + petugas saja, admin/super_admin ditolak). Daftar Permohonan hanya untuk petugas.
+- Hak akses: BR-05/BR-33 (verifikasi hanya petugas), BR-30 (admin tidak kelola admin/super_admin), BR-31 (tidak ubah peran sendiri), BR-32 (min 1 super admin aktif) TERKUNCI DI KODE (`AlurStatusService`, `PermohonanResource::bolehKelola`, `PenggunaService`, `UserPolicy`), bukan permission yang bisa diubah lewat UI. Permission Shield hanya untuk akun, role, log aktivitas (`HakAksesSeeder`, additif). Satu akun = satu role.
 
 ## 5. Struktur Tabel
 | Tabel | Kolom utama |
@@ -78,8 +79,8 @@ Legenda: [x] terkonfirmasi berhasil, [~] kode sudah diberikan tapi belum dikonfi
 - [x] `dcf JenisLayanan` (resource dasar di `app/Filament/Admin/Resources`)
 - [x] `JenisLayananResource` + `PersyaratanRelationManager` (teruji di browser). Layanan yang punya permohonan tidak bisa dihapus, aktif/nonaktif lewat tombol berkonfirmasi, kode terkunci bila sudah dipakai, form persyaratan dinamis (tipe_input, opsi).
 - [x] `PengaturanSitusPage` + branding panel dinamis (teruji di browser: nama/logo/favicon dari `pengaturan_situs`, petugas tidak bisa akses). Akses masih berbasis role admin/super_admin, nanti dialihkan ke permission Shield.
-- [~] `PermohonanResource` (index + view), `ViewPermohonan` (aksi status), `DokumenRelationManager` (lihat, tandai sesuai/tidak sesuai), `RiwayatRelationManager`, `AlurStatusService`, enum `StatusVerifikasiDokumen`, `DokumenController` + rute `/dokumen/{dokumen}`, rute sementara `login`. Belum dikonfirmasi.
-- [ ] Penyesuaian `UserResource` bawaan boilerplate (BUKAN `dcf User`, sudah ada)
+- [~] Permohonan: `AlurStatusService` TERBUKTI lewat tinker (admin ditolak, transisi tidak sah ditolak, Diproses diblokir bila dokumen belum Sesuai). Resource/halaman/relation manager/DokumenController sudah dibuat, 7 uji browser belum dikonfirmasi.
+- [~] `UserResource` ditulis ulang (Kelola Akun) + `PenggunaService` + `UserPolicy` baru (menerima record) + `HakAksesSeeder` (permission user/role/activity). Belum dikonfirmasi.
 Stub controller kosong (JenisLayanan, Permohonan, Dokumen) belum diisi.
 - [ ] Halaman Blade Masyarakat, alur pengajuan, verifikasi petugas, laporan
 
@@ -96,10 +97,10 @@ Stub controller kosong (JenisLayanan, Permohonan, Dokumen) belum diisi.
 - Desain Figma perlu disesuaikan: batas 2 MB -> 5 MB, hapus teks Dukcapil/notifikasi, tambah kolom alamat di registrasi, ganti "SIPADES".
 
 ## 9. Langkah Berikutnya
-1. Konfirmasi uji Permohonan (4 baris tinker + 7 uji browser).
-2. Baca dan sesuaikan `UserResource` + `UserPolicy` bawaan: 4 role, profil per peran (admin/petugas/masyarakat), status akun, nonaktifkan akun, aturan BR-30/31/32 (admin tidak bisa kelola admin/super_admin, tidak bisa ubah role sendiri, minimal 1 super admin).
-3. Dashboard per peran (widget): petugas (jumlah per status, permohonan terbaru), admin/super admin (pengguna, layanan, volume, permohonan terkini monitoring saja) + halaman Laporan.
-4. Shield: `shield:generate`, permission per role lewat seeder (verifikasi hanya `petugas`), alihkan `bolehKelola()` dan `PengaturanSitusPage::canAccess()` ke permission, uji BR-05/BR-33.
+1. Konfirmasi: 7 uji browser Permohonan, tinker + 11 uji browser Kelola Akun, hasil `grep` nama permission policy.
+2. Dashboard per peran (widget): petugas (jumlah per status, permohonan terbaru), admin/super admin (pengguna per peran, layanan aktif, volume per layanan/status, permohonan terkini monitoring saja).
+3. Halaman Laporan (rekap per layanan/status dengan filter periode).
+4. Rapikan menu: grup Shield dan Log Aktivitas, widget bawaan boilerplate yang tidak relevan (Overlook, LatestAccessLogs).
 5. Halaman Blade masyarakat (registrasi, login, beranda, layanan, formulir dinamis, status, perbaikan) + gunakan `AlurStatusService` untuk pengajuan dan perbaikan.
 
 ## 10. Prompt Lanjut untuk Claude Baru
