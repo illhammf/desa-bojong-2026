@@ -21,3 +21,11 @@ Livewire::setScriptRoute(function ($handle) {
 Route::get('/', function () {
     return view('welcome');
 });
+
+// Akses dokumen privat: pemilik permohonan atau petugas (PRD 7.16)
+\Illuminate\Support\Facades\Route::get('/dokumen/{dokumen}', [\App\Http\Controllers\DokumenController::class, 'tampil'])
+    ->middleware('auth')
+    ->name('dokumen.tampil');
+
+// Sementara: pengunjung yang belum login diarahkan ke login panel (nanti diganti login Blade)
+\Illuminate\Support\Facades\Route::redirect('/login', '/admin/login')->name('login');
