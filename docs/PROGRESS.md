@@ -28,6 +28,7 @@
 - Nama tabel tidak jamak dan ditulis eksplisit di model (`protected $table`).
 - Alias terminal: `dcu`, `dcd`, `dca <artisan>`, `dci`, `dcp "pesan"`, `dcm`, `dcf`, `dcr`.
 - Struktur Filament: resource di `src/app/Filament/Admin/Resources`, nama halaman list memakai "s" (contoh `ListJenisLayanans`), relation manager di `.../NamaResource/RelationManagers`. Menu dikelompokkan: Master Data, Pelayanan, Pengelolaan.
+- Panel: `app/Providers/Filament/AdminPanelProvider.php` (id `admin`, path `/admin`, SPA, plugin Shield, Themes, AuthUIEnhancer, Overlook, EditProfile, LightSwitch). Grup menu terdaftar: Pelayanan, Master Data, Pengaturan, Administration (grup "Administration" milik resource bawaan boilerplate, nama string harus sama persis). Pengaturan situs diambil lewat `PengaturanSitus::ambil()`.
 
 ## 4. Keputusan yang Dipertahankan
 **Bisnis**
@@ -74,8 +75,9 @@ Legenda: [x] terkonfirmasi berhasil, [~] kode sudah diberikan tapi belum dikonfi
 - [x] Shield dicek: super_admin.enabled=true, define_via_gate=false (tidak ada bypass Gate otomatis). Permission verifikasi tetap tidak diberikan ke super_admin. Perlu diuji nanti.
 - [x] `https://desa-bojong.test/admin/login` terbuka (login Filament tampil)
 - [x] `dcf JenisLayanan` (resource dasar di `app/Filament/Admin/Resources`)
-- [~] `JenisLayananResource` dikustomisasi + `PersyaratanRelationManager` (kode diberikan, belum dikonfirmasi). Aturan: layanan yang punya permohonan tidak bisa dihapus, aktif/nonaktif lewat tombol berkonfirmasi, kode terkunci bila sudah dipakai.
-- [ ] `PermohonanResource` (verifikasi petugas), penyesuaian `UserResource` bawaan boilerplate (BUKAN `dcf User`, sudah ada), halaman Pengaturan Situs, branding panel dinamis
+- [x] `JenisLayananResource` + `PersyaratanRelationManager` (teruji di browser). Layanan yang punya permohonan tidak bisa dihapus, aktif/nonaktif lewat tombol berkonfirmasi, kode terkunci bila sudah dipakai, form persyaratan dinamis (tipe_input, opsi).
+- [~] `PengaturanSitusPage` (`app/Filament/Admin/Pages`) + branding panel dinamis (nama, logo, favicon dari `pengaturan_situs`, ditambal di `AdminPanelProvider`). Akses sementara berbasis role admin/super_admin, belum dikonfirmasi.
+- [ ] `PermohonanResource` (verifikasi petugas) dan penyesuaian `UserResource` bawaan boilerplate (BUKAN `dcf User`, sudah ada)
 Stub controller kosong (JenisLayanan, Permohonan, Dokumen) belum diisi.
 - [ ] Halaman Blade Masyarakat, alur pengajuan, verifikasi petugas, laporan
 
@@ -92,12 +94,11 @@ Stub controller kosong (JenisLayanan, Permohonan, Dokumen) belum diisi.
 - Desain Figma perlu disesuaikan: batas 2 MB -> 5 MB, hapus teks Dukcapil/notifikasi, tambah kolom alamat di registrasi, ganti "SIPADES".
 
 ## 9. Langkah Berikutnya
-1. Konfirmasi uji JenisLayananResource + PersyaratanRelationManager (tinker urutan = 3, uji di browser).
-2. Baca `AdminPanelProvider` (lokasi discover pages, branding), lalu buat halaman Pengaturan Situs dan branding panel dari tabel `pengaturan_situs`.
-3. `dcf Permohonan` lalu rapikan: tabel antrean petugas, halaman detail verifikasi (isian, dokumen, riwayat), aksi ubah status sesuai `StatusPermohonan::transisi()`.
-4. Sesuaikan `UserResource` bawaan: role, profil per peran (admin/petugas/masyarakat), status akun.
-5. Shield: `shield:generate`, atur permission per role lewat seeder (verifikasi hanya `petugas`, tidak untuk `admin` dan `super_admin`), uji BR-05 dan BR-33.
-6. Halaman Blade masyarakat.
+1. Konfirmasi uji Pengaturan Situs (nama/logo tampil di panel, petugas tidak bisa mengakses).
+2. `dcf Permohonan` lalu rapikan: tabel antrean petugas, halaman detail verifikasi (isian, dokumen, riwayat), aksi ubah status sesuai `StatusPermohonan::transisi()`, catatan wajib saat Perlu Perbaikan.
+3. Sesuaikan `UserResource` bawaan (baca dulu isinya): role 4 peran, profil per peran, status akun, grup menu.
+4. Shield: `shield:generate`, atur permission per role lewat seeder (verifikasi hanya `petugas`), alihkan `PengaturanSitusPage::canAccess()` ke permission, uji BR-05 dan BR-33.
+5. Halaman Blade masyarakat (registrasi, login, beranda, layanan, formulir dinamis, status, perbaikan).
 
 ## 10. Prompt Lanjut untuk Claude Baru
 "Lanjutkan proyek Desa Bojong dari file PROGRESS.md ini. Jangan mulai dari awal dan jangan ubah keputusan di bagian 4.
