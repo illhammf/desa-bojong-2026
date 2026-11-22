@@ -76,7 +76,7 @@ Legenda: [x] terkonfirmasi berhasil, [~] kode sudah diberikan tapi belum dikonfi
 - [x] `https://desa-bojong.test/admin/login` terbuka (login Filament tampil)
 - [x] `dcf JenisLayanan` (resource dasar di `app/Filament/Admin/Resources`)
 - [x] `JenisLayananResource` + `PersyaratanRelationManager` (teruji di browser). Layanan yang punya permohonan tidak bisa dihapus, aktif/nonaktif lewat tombol berkonfirmasi, kode terkunci bila sudah dipakai, form persyaratan dinamis (tipe_input, opsi).
-- [~] `PengaturanSitusPage` (`app/Filament/Admin/Pages`) + branding panel dinamis (nama, logo, favicon dari `pengaturan_situs`, ditambal di `AdminPanelProvider`). Akses sementara berbasis role admin/super_admin, belum dikonfirmasi.
+- [x] `PengaturanSitusPage` + branding panel dinamis (teruji di browser: nama/logo/favicon dari `pengaturan_situs`, petugas tidak bisa akses). Akses masih berbasis role admin/super_admin, nanti dialihkan ke permission Shield.
 - [ ] `PermohonanResource` (verifikasi petugas) dan penyesuaian `UserResource` bawaan boilerplate (BUKAN `dcf User`, sudah ada)
 Stub controller kosong (JenisLayanan, Permohonan, Dokumen) belum diisi.
 - [ ] Halaman Blade Masyarakat, alur pengajuan, verifikasi petugas, laporan
