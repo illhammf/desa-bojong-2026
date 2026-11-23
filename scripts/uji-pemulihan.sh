@@ -16,7 +16,8 @@ CADANGAN="$TMP/cadangan"
 BERKAS_UJI="$TMP/berkas"
 GAGAL=0
 
-sql() { docker compose exec -T db sh -c 'mariadb -uroot -p"$MYSQL_ROOT_PASSWORD" -N -B -e "$1"' _ "$1"; }
+# </dev/null: docker compose exec meneruskan stdin; tanpa ini ia menelan masukan loop pembaca di bawah.
+sql() { docker compose exec -T db sh -c 'mariadb -uroot -p"$MYSQL_ROOT_PASSWORD" -N -B -e "$1"' _ "$1" </dev/null; }
 
 bersih() {
   sql "DROP DATABASE IF EXISTS \`$DB_UJI\`" >/dev/null 2>&1 || true
@@ -55,7 +56,8 @@ fi
 SEBELUM="$GAGAL"
 SEMUA=0
 BARIS=0
-while IFS= read -r t; do
+HARUS="$(printf '%s\n' "$TABEL" | grep -c . || true)"
+while IFS= read -r t <&3; do
   [ -n "$t" ] || continue
   SEMUA=$((SEMUA + 1))
   a="$(sql "SELECT COUNT(*) FROM \`$DB_ASLI\`.\`$t\`" 2>/dev/null)" || a="?"
@@ -69,9 +71,11 @@ while IFS= read -r t; do
   else
     BARIS=$((BARIS + a))
   fi
-done <<< "$TABEL"
-if [ "$GAGAL" -eq "$SEBELUM" ]; then
-  lulus "$SEMUA tabel identik ($BARIS baris)"
+done 3<<< "$TABEL"
+if [ "$SEMUA" -ne "$HARUS" ]; then
+  cacat "hanya $SEMUA dari $HARUS tabel yang dibandingkan"
+elif [ "$GAGAL" -eq "$SEBELUM" ]; then
+  lulus "$SEMUA dari $HARUS tabel identik ($BARIS baris)"
 fi
 
 echo "4. Membandingkan berkas (SHA-256 setiap berkas)"
@@ -98,10 +102,10 @@ else
 fi
 
 echo "5. Memeriksa aplikasi terhadap basis data pulihan"
-NAMA_TERBACA="$(docker compose exec -T -e DB_DATABASE="$DB_UJI" php php artisan tinker --execute='echo DB::connection()->getDatabaseName();' 2>/dev/null | tr -d '\r\n ')"
+NAMA_TERBACA="$(docker compose exec -T -e DB_DATABASE="$DB_UJI" php php artisan tinker --execute='echo DB::connection()->getDatabaseName();' </dev/null 2>/dev/null | tr -d '\r\n ')"
 if [ "$NAMA_TERBACA" != "$DB_UJI" ]; then
   cacat "aplikasi tidak memakai basis data pulihan (terbaca: '${NAMA_TERBACA:-kosong}'). Jalankan: dca config:clear, lalu ulangi."
-elif docker compose exec -T -e DB_DATABASE="$DB_UJI" php php artisan app:periksa-konsistensi; then
+elif docker compose exec -T -e DB_DATABASE="$DB_UJI" php php artisan app:periksa-konsistensi </dev/null; then
   lulus "app:periksa-konsistensi lolos pada data pulihan"
 else
   cacat "app:periksa-konsistensi menemukan masalah pada data pulihan"

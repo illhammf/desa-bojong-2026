@@ -80,7 +80,7 @@ it('menolak bila cookie sesi tidak aman atau tidak ada Super Admin aktif', funct
 });
 
 it('menolak APP_URL tanpa HTTPS', function () {
-    config(['app.url' => 'http://desa-bojong.example'\]\)\;
+    config(['app.url' => 'http://desa-bojong.example']);
 
     $this->artisan('app:periksa-produksi')
         ->expectsOutputToContain('APP_URL harus diawali https://')

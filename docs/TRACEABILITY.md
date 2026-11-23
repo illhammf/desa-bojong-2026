@@ -89,8 +89,8 @@
 | NFR-11..15 | Bahasa Indonesia, navigasi, responsif | 🧩 | Panel berbahasa Indonesia. Halaman masyarakat belum. |
 | NFR-16 | Gagal simpan tidak tampil sebagai sukses | 🟡 | Transaksi dan pembersihan berkas ada, belum ada tes kegagalan. |
 | NFR-17 | Kirim ganda tidak menggandakan | ✅ | `PengajuanTest` |
-| NFR-18 | Pencadangan dan pemulihan | ❌ | Belum ada. |
-| NFR-19 | Pesan gangguan tanpa rincian teknis | ❌ | Perlu persiapan produksi (APP_DEBUG, halaman galat). |
+| NFR-18 | Pencadangan dan pemulihan | ✅ | `scripts/cadangkan.sh`, `scripts/pulihkan.sh`, `scripts/uji-pemulihan.sh` (tabel dan berkas pulihan identik dengan data aktif, aplikasi lolos pada data pulihan). Panduan: `docs/PEMULIHAN.md`. |
+| NFR-19 | Pesan gangguan tanpa rincian teknis | ✅ | `HalamanGalatTest` (403/404/419/429/500/503 berbahasa Indonesia; galat sistem tanpa rincian teknis saat debug mati). Di produksi pastikan lewat `dca app:periksa-produksi` (`ProduksiTest`). |
 | NFR-20..22 | Kompatibilitas peramban dan layar | 🧩 | Menunggu Blade. |
 | NFR-23 | Pemisahan tanggung jawab | 🟡 | Service/policy terpisah. Tidak diuji otomatis. |
 | NFR-24 | Layanan dan persyaratan tanpa ubah kode | ✅ | `PengajuanTest` (isian ditambah admin), `SeederTest` |
@@ -102,9 +102,9 @@
 | Tambahan | Pencatatan aktivitas | ✅ | `AuditTest` |
 
 ## Celah backend yang tersisa (urut prioritas)
-1. Pencadangan dan pemulihan (NFR-18).
-2. Persiapan produksi dan README (NFR-19/25): halaman galat berbahasa Indonesia, APP_DEBUG, sisa boilerplate di `.env.example`, akun demo, kata sandi.
-3. Pengukuran kinerja (NFR-07/08/10).
-4. Tes tambahan: halaman Log Aktivitas (FR-49), riwayat terlihat (FR-25), kegagalan simpan (NFR-16).
-5. Keputusan bersama: cakupan FR-20 (verifikasi data isian).
-6. Halaman Blade masyarakat (menutup seluruh status 🧩).
+1. Dokumentasi cara menjalankan (NFR-25): README khusus proyek, panduan, bersihkan sisa boilerplate di `.env.example`.
+2. Pengukuran kinerja (NFR-07/08/10).
+3. Tes tambahan: halaman Log Aktivitas (FR-49), riwayat terlihat (FR-25), kegagalan simpan (NFR-16).
+4. Keputusan bersama: cakupan FR-20 (verifikasi data isian).
+5. Halaman Blade masyarakat (menutup seluruh status 🧩).
+6. Sebelum produksi: jalankan `dca app:periksa-produksi` sampai SIAP (ganti kata sandi root basis data, jangan buka port 13306 keluar, hapus akun demo, HTTPS dan cookie aman).

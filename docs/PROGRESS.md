@@ -99,6 +99,8 @@ Legenda: [x] terbukti (ada keluaran uji/konfirmasi pengguna), [~] kode sudah dib
 - [x] Pencatatan aktivitas FR-51: 12 skenario lulus (`uji_audit.php`)
 
 **Infrastruktur dan keamanan**
+- [x] Halaman galat berbahasa Indonesia (`resources/views/errors/*`, mandiri tanpa Vite) + `app:periksa-produksi` (APP_ENV/DEBUG/KEY/URL https, cookie sesi aman, kata sandi basis data lemah, akun demo, kata sandi "password", Super Admin aktif). Tes: `HalamanGalatTest`, `ProduksiTest`.
+- [x] Pencadangan dan pemulihan (NFR-18): `scripts/cadangkan.sh`, `pulihkan.sh`, `uji-pemulihan.sh` (diuji di sandbox dengan docker tiruan: 16 skenario + 8 putaran stabil; di mesin sungguhan: uji pemulihan lulus). Skrip berjalan di HOST (mariadb-dump hanya ada di kontainer db). Cadangan di `cadangan/` (di `.gitignore`, memuat data pribadi). Panduan: `docs/PEMULIHAN.md`. Pelajaran: pola `grep -q` di bawah `pipefail` rawan race (SIGPIPE), pakai `grep ... >/dev/null`.
 - [x] Kondisi startup kontainer teruji di DB sungguhan setelah restart: generator hanya memproses Role dan User, `izin total 12` (admin 5, super_admin 12), Super Admin dapat MELIHAT log tetapi tidak dapat mengubah/menghapusnya. `LogAktivitasPolicy`, `KondisiStartupTest`, izin ubah/hapus log tidak lagi dibuat. 123 tes lulus. Tabel "Page/Widget Permissions" di log startup hanya tampilan: `shield:generate --all` tidak menyimpan izin page/widget (terbukti: 12 izin sebelum dan sesudah, page/widget = 0).
 - [x] Batas unggah Nginx `client_max_body_size 64M` (teruji: halaman 200, unggah 25 MB lolos Nginx (405 dari Laravel), 70 MB ditolak 413)
 - [x] `DatabaseSeeder` mematikan log saat seeding (teruji: 0 baris log setelah `migrate:fresh --seed`)
@@ -121,6 +123,7 @@ Legenda: [x] terbukti (ada keluaran uji/konfirmasi pengguna), [~] kode sudah dib
 - `database/seeders/*`, `database/uji_pengajuan.php`, `database/uji_audit.php`.
 
 ## 8. Hal yang Belum Diputuskan
+- Sebelum produksi: kata sandi root basis data (`p455w0rd`) tercantum di README dan docker-compose yang ter-commit ke GitHub, anggap sudah terbuka. Ganti, buat pengguna basis data khusus, hapus pemetaan port `13306:3306` ke luar, hapus akun demo, nyalakan HTTPS dan cookie aman. Verifikasi: `dca app:periksa-produksi` harus SIAP.
 - Pengaturan situs (dan aturan dinamis persyaratan) belum tercantum di BRD/PRD, perlu ditambahkan singkat ke dokumen.
 - Konfirmasi desa soal persyaratan kondisional dan estimasi waktu tiap layanan (kolom `estimasi_waktu` masih kosong).
 - Kode 20 layanan (DOMY, DOMU, KK, KTP, PND, SKTM, BDN, MNS, MNB, WLI, BMN, AKT, KLR, KMT, WRS, BMR, KRM, DOM, SIU, UMM) bisa diubah dari Filament.
@@ -128,9 +131,9 @@ Legenda: [x] terbukti (ada keluaran uji/konfirmasi pengguna), [~] kode sudah dib
 
 ## 9. Langkah Berikutnya
 Acuan: `docs/TRACEABILITY.md` (matriks FR/BR/NFR terhadap kode dan bukti).
-1. Pencadangan dan pemulihan (NFR-18): skrip cadang + uji pemulihan ke database sementara.
-2. Persiapan produksi dan README (NFR-19/25): halaman galat berbahasa Indonesia, bersihkan sisa boilerplate (`djambred`) di `.env.example`, README khusus proyek, checklist produksi.
-3. Pengukuran kinerja (NFR-07/08/10). Tes tambahan: halaman Log Aktivitas, riwayat terlihat, kegagalan simpan.
+1. Dokumentasi (NFR-25): `docs/PANDUAN.md` + README khusus proyek, bersihkan sisa boilerplate (`djambred`) di `.env.example`.
+2. Pengukuran kinerja (NFR-07/08/10). Tes tambahan: halaman Log Aktivitas, riwayat terlihat, kegagalan simpan.
+3. Keputusan FR-20 (verifikasi data isian) dan konfirmasi persyaratan kondisional dengan desa.
 4. Setelah backend mantap: halaman Blade masyarakat yang memanggil `RegistrasiService`, `AutentikasiService`, `PengajuanService`, `AlurStatusService`.
 
 ## 10. Prompt Lanjut untuk Claude Baru
