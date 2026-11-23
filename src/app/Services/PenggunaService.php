@@ -116,7 +116,18 @@ class PenggunaService
         $role = $data['role'];
 
         DB::transaction(function () use ($user, $role, $data) {
+            $sebelum = $user->roles()->pluck('name')->first();
             $user->syncRoles([$role]);
+
+            if ($sebelum !== $role) {
+                activity('Akun')
+                    ->performedOn($user)
+                    ->event('peran')
+                    ->withProperties(['dari' => $sebelum, 'ke' => $role])
+                    ->log($sebelum
+                        ? "Peran akun {$user->email} diubah dari {$sebelum} ke {$role}"
+                        : "Peran akun {$user->email} ditetapkan: {$role}");
+            }
 
             if ($role === 'masyarakat') {
                 Masyarakat::updateOrCreate(

@@ -8,47 +8,40 @@ return [
     'scoped_to_tenant' => true,
     'navigation_sort' => null,
 
+    // Pencatatan memakai log eksplisit: trait LogsActivity pada model, service
+    // (AlurStatusService, PenggunaService), dan listener App\Listeners\CatatAutentikasi.
+    // Logger otomatis dimatikan agar tidak ada log ganda dan notifikasi tidak ikut tercatat.
     'resources' => [
-        'enabled' => true,
+        'enabled' => false,
         'log_name' => 'Resource',
         'logger' => \Z3d0X\FilamentLogger\Loggers\ResourceLogger::class,
         'color' => 'success',
-
-        'exclude' => [
-            // App\Filament\Resources\UserResource::class,
-        ],
+        'exclude' => [],
         'cluster' => null,
-        'navigation_group' => 'Administration',
+        'navigation_group' => 'Pengaturan',
     ],
 
     'access' => [
-        'enabled' => true,
+        'enabled' => false,
         'logger' => \Z3d0X\FilamentLogger\Loggers\AccessLogger::class,
         'color' => 'danger',
         'log_name' => 'Access',
     ],
 
     'notifications' => [
-        'enabled' => true,
+        'enabled' => false,
         'logger' => \Z3d0X\FilamentLogger\Loggers\NotificationLogger::class,
         'color' => null,
         'log_name' => 'Notification',
     ],
 
     'models' => [
-        'enabled' => true,
+        'enabled' => false,
         'log_name' => 'Model',
         'color' => 'warning',
         'logger' => \Z3d0X\FilamentLogger\Loggers\ModelLogger::class,
-        'register' => [
-            // App\Models\User::class,
-        ],
+        'register' => [],
     ],
 
-    'custom' => [
-        // [
-        //     'log_name' => 'Custom',
-        //     'color' => 'primary',
-        // ]
-    ],
+    'custom' => [],
 ];

@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 use App\Enums\TipePersyaratan;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -10,6 +12,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Persyaratan extends Model
 {
+    use LogsActivity;
+
     protected $table = 'persyaratan';
 
     protected $fillable = [
@@ -62,5 +66,21 @@ class Persyaratan extends Model
     public function dokumen(): HasMany
     {
         return $this->hasMany(Dokumen::class, 'persyaratan_id');
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->useLogName('Persyaratan')
+            ->logFillable()
+            ->logExcept(['urutan'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->setDescriptionForEvent(fn (string $e): string => match ($e) {
+                'created' => 'Persyaratan dibuat',
+                'updated' => 'Persyaratan diperbarui',
+                'deleted' => 'Persyaratan dihapus',
+                default => $e,
+            });
     }
 }

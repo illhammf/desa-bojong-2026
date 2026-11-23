@@ -12,11 +12,12 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Satu-satunya pintu perubahan status permohonan (PRD 7.7, FR-41, FR-42).
+ * Satu-satunya pintu perubahan status permohonan (PRD 7.7, FR-41, FR-42, FR-51).
  *
  * $oleh = Petugas  : perubahan manual oleh petugas.
  * $oleh = null     : perubahan otomatis oleh sistem. Hanya diizinkan untuk
- *                    Perlu Perbaikan -> Dalam Pemeriksaan (pemohon mengirim perbaikan).
+ *                    Perlu Perbaikan -> Dalam Pemeriksaan (pemohon mengirim perbaikan);
+ *                    pada log aktivitas, pelakunya dicatat sebagai pemohon.
  *                    Status awal "Diajukan" dicatat lewat catatAwal().
  */
 class AlurStatusService
@@ -28,7 +29,7 @@ class AlurStatusService
         'siap_diambil' => 'Surat fisik siap diambil di Balai Desa Bojong.',
     ];
 
-    /** Mencatat riwayat pertama saat permohonan berhasil diajukan (FR-38, FR-42). */
+    /** Mencatat riwayat pertama saat permohonan berhasil diajukan (FR-38, FR-42, FR-51). */
     public function catatAwal(Permohonan $permohonan): void
     {
         RiwayatStatus::create([
@@ -38,6 +39,16 @@ class AlurStatusService
             'keterangan' => self::KETERANGAN_DEFAULT['diajukan'],
             'waktu_perubahan' => now(),
         ]);
+
+        activity('Permohonan')
+            ->causedBy($permohonan->pemohon)
+            ->performedOn($permohonan)
+            ->event('diajukan')
+            ->withProperties([
+                'nomor' => $permohonan->nomor_permohonan,
+                'layanan' => $permohonan->layanan?->kode,
+            ])
+            ->log("Permohonan {$permohonan->nomor_permohonan} diajukan");
     }
 
     public function ubah(Permohonan $permohonan, StatusPermohonan $tujuan, ?User $oleh = null, ?string $keterangan = null): Permohonan
@@ -89,6 +100,18 @@ class AlurStatusService
                 'keterangan' => $keterangan ?: (self::KETERANGAN_DEFAULT[$tujuan->value] ?? null),
                 'waktu_perubahan' => now(),
             ]);
+
+            activity('Permohonan')
+                ->causedBy($oleh ?? $p->pemohon)
+                ->performedOn($p)
+                ->event('status')
+                ->withProperties([
+                    'nomor' => $p->nomor_permohonan,
+                    'dari' => $asal->value,
+                    'ke' => $tujuan->value,
+                    'keterangan' => $keterangan,
+                ])
+                ->log("Status {$p->nomor_permohonan} diubah dari {$asal->getLabel()} ke {$tujuan->getLabel()}");
         });
 
         return $permohonan->refresh();

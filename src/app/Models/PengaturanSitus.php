@@ -2,11 +2,15 @@
 
 namespace App\Models;
 
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 use Illuminate\Database\Eloquent\Model;
 use Throwable;
 
 class PengaturanSitus extends Model
 {
+    use LogsActivity;
+
     protected $table = 'pengaturan_situs';
 
     protected $fillable = [
@@ -40,5 +44,20 @@ class PengaturanSitus extends Model
     public static function lupakan(): void
     {
         static::$memo = null;
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->useLogName('Pengaturan')
+            ->logFillable()
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->setDescriptionForEvent(fn (string $e): string => match ($e) {
+                'created' => 'Pengaturan situs dibuat',
+                'updated' => 'Pengaturan situs diperbarui',
+                'deleted' => 'Pengaturan situs dihapus',
+                default => $e,
+            });
     }
 }

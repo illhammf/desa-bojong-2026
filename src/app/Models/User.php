@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasAvatar;
@@ -14,6 +16,8 @@ use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements FilamentUser, HasAvatar
 {
+    use LogsActivity;
+
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory,HasRoles, Notifiable;
 
@@ -91,5 +95,20 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
     {
         return $this->isAktif()
             && $this->hasAnyRole(['petugas', 'admin', 'super_admin']);
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->useLogName('Akun')
+            ->logOnly(['name', 'email', 'no_hp', 'status_akun', 'avatar_url'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->setDescriptionForEvent(fn (string $e): string => match ($e) {
+                'created' => 'Akun dibuat',
+                'updated' => 'Akun diperbarui',
+                'deleted' => 'Akun dihapus',
+                default => $e,
+            });
     }
 }
