@@ -48,6 +48,7 @@
 - `APP_LOCALE=id`. `canAccessPanel()` harus menolak masyarakat.
 - `APP_TIMEZONE=Asia/Jakarta`. Perubahan status HANYA lewat `App\Services\AlurStatusService::ubah()` (cek role petugas, transisi enum, catatan wajib, dokumen harus Sesuai sebelum Diproses). Dokumen di disk `local` (privat), dibuka lewat `DokumenController` (pemilik + petugas saja, admin/super_admin ditolak). Daftar Permohonan hanya untuk petugas.
 - Hak akses: BR-05/BR-33 (verifikasi hanya petugas), BR-30 (admin tidak kelola admin/super_admin), BR-31 (tidak ubah peran sendiri), BR-32 (min 1 super admin aktif) TERKUNCI DI KODE (`AlurStatusService`, `PermohonanResource::bolehKelola`, `PenggunaService`, `UserPolicy`), bukan permission yang bisa diubah lewat UI. Permission Shield hanya untuk akun, role, log aktivitas (`HakAksesSeeder`, additif). Satu akun = satu role.
+- Pengajuan dan perbaikan HANYA lewat `PengajuanService` (halaman Blade cukup memanggilnya). Berkas disk `local` (privat), nama acak, jenis dicek dari isi berkas. Batas 5 MB harus didukung PHP (`upload_max_filesize`, `post_max_size`) dan Nginx (`client_max_body_size`) — belum dicek.
 
 ## 5. Struktur Tabel
 | Tabel | Kolom utama |
@@ -82,7 +83,8 @@ Legenda: [x] terkonfirmasi berhasil, [~] kode sudah diberikan tapi belum dikonfi
 - [x] Permohonan: `PermohonanResource` (index + view), aksi status, `DokumenRelationManager`, `RiwayatRelationManager`, `AlurStatusService`, `DokumenController`. Teruji (tinker + browser, dikonfirmasi pengguna).
 - [x] Kelola Akun: `UserResource` + `PenggunaService` + `UserPolicy` + `HakAksesSeeder`. Teruji (tinker + browser, dikonfirmasi pengguna).
 - [x] Dashboard per peran (teruji, dikonfirmasi pengguna): `App\Filament\Admin\Pages\Dashboard` (menggantikan dashboard bawaan, daftar widget eksplisit) + widget `StatistikPetugasWidget`, `StatistikPengelolaWidget`, `StatusPermohonanChart`, `VolumeLayananChart`, `PermohonanTerbaruWidget` (admin/super admin tanpa tombol Periksa). Belum dikonfirmasi.
-- [~] `LaporanPage` (petugas, admin, super admin): filter periode/layanan/status, kartu per status, rekap layanan x status, tabel rincian; Periksa hanya untuk petugas. Ekspor = Versi 1.1. Belum dikonfirmasi.
+- [~] `LaporanPage` (petugas, admin, super admin): route dan query terbukti (tinker = 5), tampilan di browser belum dikonfirmasi. Ekspor = Versi 1.1.
+- [~] Backend pengajuan: `PengajuanService` (ajukan: validasi isian/dokumen/alasan, berkas pdf/jpg/png maks 5 MB privat nama acak, token anti kirim ganda, nomor `REG-KODE-TAHUN-URUT` dengan retry; perbaiki: hanya pemilik, hanya Perlu Perbaikan, dokumen diganti, status kembali Dalam Pemeriksaan) + `AlurStatusService::catatAwal()` + sistem hanya boleh PerluPerbaikan->DalamPemeriksaan. Skrip uji: `src/database/uji_pengajuan.php` (15 skenario, rollback). Belum dijalankan.
 Stub controller kosong (JenisLayanan, Permohonan, Dokumen) belum diisi.
 - [ ] Halaman Blade Masyarakat, alur pengajuan, verifikasi petugas, laporan
 
@@ -99,10 +101,12 @@ Stub controller kosong (JenisLayanan, Permohonan, Dokumen) belum diisi.
 - Desain Figma perlu disesuaikan: batas 2 MB -> 5 MB, hapus teks Dukcapil/notifikasi, tambah kolom alamat di registrasi, ganti "SIPADES".
 
 ## 9. Langkah Berikutnya
-1. Konfirmasi Laporan (tinker = 5 + 6 uji browser).
-2. Rapikan menu: urutan grup (Pelayanan, Master Data, Pengaturan, Administration), halaman Role Shield dan Log Aktivitas, widget bawaan yang masih tersisa (`LatestAccessLogs`), alihkan `bolehKelola()` dan `canAccess()` ke permission bila perlu.
-3. Halaman Blade masyarakat: registrasi (NIK unik, alamat), login satu halaman semua peran (ganti rute sementara `login`), beranda, daftar + detail layanan, formulir dinamis dari tabel `persyaratan`, unggah dokumen (5 MB, disk privat), status permohonan, perbaikan. Gunakan `AlurStatusService`; nomor pengajuan `REG-KODE-TAHUN-URUT` dibuat dalam transaksi (unik tahun+urut).
-4. Uji menyeluruh alur (warga ajukan -> petugas periksa -> perbaikan -> proses -> siap diambil) dan uji keamanan akses dokumen.
+1. Jalankan `src/database/uji_pengajuan.php` (harus 15 lulus, 0 gagal) dan kirim hasil diagnostik (batas unggah, filament-logger, shield, tests).
+2. Atur batas unggah PHP dan Nginx ke minimal 5 MB per berkas (bukti: uji unggah 5 MB).
+3. Log aktivitas FR-51 (login, akun, role, layanan/persyaratan, status permohonan) agar tercatat dan hanya terbaca super admin.
+4. Lindungi 4 role inti (masyarakat, petugas, admin, super_admin) dari hapus/ganti nama lewat halaman Role.
+5. Test otomatis (PHPUnit/Pest) untuk aturan inti, rapikan menu dan widget bawaan boilerplate, konfirmasi Laporan di browser.
+6. Baru setelah backend mantap: halaman Blade masyarakat (registrasi, login, beranda, layanan, formulir dinamis, status, perbaikan) yang memanggil `PengajuanService`.
 
 ## 10. Prompt Lanjut untuk Claude Baru
 "Lanjutkan proyek Desa Bojong dari file PROGRESS.md ini. Jangan mulai dari awal dan jangan ubah keputusan di bagian 4.
