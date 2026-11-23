@@ -51,6 +51,7 @@
 - Role lewat Spatie/Shield: `masyarakat`, `petugas`, `admin`, `super_admin`. Tidak ada kolom `role` di `users`. Satu akun = satu role. Super Admin tanpa tabel profil.
 - Empat role inti tidak boleh dihapus/diganti nama (event model di `AppServiceProvider`).
 - Aturan kewenangan TERKUNCI DI KODE (bukan permission yang bisa diubah lewat UI): BR-05/BR-33 (`AlurStatusService`, `PermohonanResource::bolehKelola`), BR-30/31/32 (`PenggunaService`, `UserPolicy`). Permission Shield hanya untuk akun, role, log aktivitas (`HakAksesSeeder`, bersifat menambah). Pengaturan Situs, Laporan, Daftar Permohonan memakai pengecekan role.
+- Kebijakan akun = `App\Policies\AkunPolicy` yang DIDAFTARKAN EKSPLISIT (`Gate::policy`) agar tidak tertimpa generator Shield. Jangan mengandalkan `UserPolicy.php`.
 - Shield: `define_via_gate=false` (tidak ada bypass Gate otomatis untuk super_admin).
 - Perubahan status HANYA lewat `AlurStatusService::ubah()`; status awal lewat `catatAwal()`. Tanpa petugas (sistem) hanya boleh PerluPerbaikan -> DalamPemeriksaan.
 - Master data (JenisLayanan, Persyaratan) hanya untuk admin/super_admin lewat `JenisLayananPolicy`/`PersyaratanPolicy` (berbasis role, tidak bisa dilonggarkan lewat UI).
@@ -58,6 +59,7 @@
 - Log aktivitas (FR-51): logger otomatis Filament Logger DIMATIKAN (`config/filament-logger.php`). Pencatatan eksplisit: trait `LogsActivity` (User, JenisLayanan, Persyaratan, PengaturanSitus), listener `CatatAutentikasi`, `AlurStatusService`, `PenggunaService`. Log name: Autentikasi (login/logout/login_gagal), Akun (+event `peran`), Layanan, Persyaratan, Pengaturan, Permohonan (event `diajukan`, `status` dengan dari/ke). Kata sandi tidak dicatat. Hanya Super Admin yang bisa melihat (permission `view_any_activity`), tanpa permission ubah/hapus. Seeding tidak dicatat.
 - `APP_LOCALE=id`, `APP_TIMEZONE=Asia/Jakarta`.
 - Batas unggah: PHP 128M (`php/local.ini`), Nginx `client_max_body_size 64M` (`nginx/default.conf`).
+- Disk `local` (privat) tidak memasang rute `/storage/...` (`serve => false` di `config/filesystems.php`); dokumen hanya lewat `DokumenController`.
 
 ## 5. Struktur Tabel
 | Tabel | Kolom utama |
@@ -101,7 +103,7 @@ Legenda: [x] terbukti (ada keluaran uji/konfirmasi pengguna), [~] kode sudah dib
 - [x] Proteksi 4 role inti (event `Role::deleting/updating` di `AppServiceProvider`; teruji tinker: hapus dan ganti nama ditolak, peran non-inti bebas). Uji lewat halaman Role di browser belum dikonfirmasi.
 
 **Belum dikerjakan**
-- [~] Test Pest permanen: `tests/Feature/*Test.php` + `tests/Support/Skenario.php` (pengajuan/perbaikan, alur status, audit, hak akses/BR-30..33, peran inti, seeder, akses dokumen, akses panel HTTP + laporan). Kode sudah diberikan, hasil `dca test` belum dikonfirmasi.
+- [~] Test Pest permanen (`tests/Feature/*Test.php` + `tests/Support/Skenario.php`): 111 dari 113 lulus. Dua yang gagal = BR-30 dan BR-31 pada policy akun (UserPolicy ternyata berperilaku seperti stub bawaan Shield). Perbaikan: `AkunPolicy` didaftarkan eksplisit di `AppServiceProvider` + tes `KebijakanAkunTest`. Menunggu `dca test` hijau.
 - [~] Rapikan menu: Role dan Log Aktivitas masuk grup "Pengaturan" (override `src/lang/vendor/*/{en,id}`), Overlook dan `LatestAccessLogs` dibuang, `JenisLayananPolicy` + `PersyaratanPolicy` (master data hanya admin/super admin; sebelumnya petugas bisa mengaksesnya). Belum dikonfirmasi.
 - [ ] Audit kelengkapan FR-01..51 dan BR terhadap kode (matriks `docs/TRACEABILITY.md`)
 - [ ] Stub controller kosong (`JenisLayananController`, `PermohonanController`) dipakai atau dihapus (tergantung rancangan Blade)
