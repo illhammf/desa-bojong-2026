@@ -54,9 +54,9 @@
 | FR-46 | Super Admin kelola akun Administrator | 🟡 | Aturan: `HakAksesTest`. Form: uji browser. |
 | FR-47 | Kelola peran dan permission | 🟡 | Halaman Peran Shield, uji browser. Peran inti: `PeranIntiTest`. |
 | FR-48 | Beri dan cabut peran Admin/Super Admin | ✅ | `HakAksesTest` |
-| FR-49 | Super Admin melihat log aktivitas | 🟡 | Permission: `AuditTest`. Halaman log belum dites HTTP. |
+| FR-49 | Super Admin melihat log aktivitas | 🟡 | `LogAktivitasPolicy` (role-locked): `AuditTest`, `KondisiStartupTest`. Halaman log belum dites HTTP. |
 | FR-50 | Minimal satu Super Admin aktif | ✅ | `HakAksesTest` |
-| FR-51 | Catat aktivitas penting | ✅ | `AuditTest` |
+| FR-51 | Catat aktivitas penting | ✅ | `AuditTest`. Log tidak dapat diubah/dihapus siapa pun, walau Super Admin memegang seluruh permission: `KondisiStartupTest`. |
 
 ## Aturan Bisnis (BR)
 | Kode | Status | Bukti / Catatan |

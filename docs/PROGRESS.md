@@ -51,7 +51,7 @@
 - Role lewat Spatie/Shield: `masyarakat`, `petugas`, `admin`, `super_admin`. Tidak ada kolom `role` di `users`. Satu akun = satu role. Super Admin tanpa tabel profil.
 - Empat role inti tidak boleh dihapus/diganti nama (event model di `AppServiceProvider`).
 - Aturan kewenangan TERKUNCI DI KODE (bukan permission yang bisa diubah lewat UI): BR-05/BR-33 (`AlurStatusService`, `PermohonanResource::bolehKelola`), BR-30/31/32 (`PenggunaService`, `UserPolicy`). Permission Shield hanya untuk akun, role, log aktivitas (`HakAksesSeeder`, bersifat menambah). Pengaturan Situs, Laporan, Daftar Permohonan memakai pengecekan role.
-- Startup kontainer menjalankan `shield:generate` (terlihat di `docker compose logs php`): berkas `*Policy.php` milik resource yang tidak dikecualikan ditimpa setiap start. Karena itu kebijakan penting memakai nama non-standar dan didaftarkan eksplisit di `AppServiceProvider`: `AkunPolicy` (User), `KelolaLayananPolicy` (JenisLayanan), `PersyaratanPolicy`. `PermohonanResource` dan `JenisLayananResource` dikecualikan lewat `filament-shield.exclude.resources`. `UserPolicy.php`, `ActivityPolicy.php`, `RolePolicy.php` dikelola Shield: JANGAN diedit.
+- Startup kontainer (`ProjectUpdate`/`ProjectInitialize`) menjalankan `shield:generate` dan memberi role `super_admin` SELURUH permission (terbukti di DB sungguhan; tes memori tidak melihatnya). Karena itu: (1) berkas `*Policy.php` milik resource yang tidak dikecualikan ditimpa tiap start, jadi kebijakan penting bernama non-standar dan didaftarkan eksplisit di `AppServiceProvider` (`AkunPolicy`, `KelolaLayananPolicy`, `PersyaratanPolicy`, `LogAktivitasPolicy`); (2) `PermohonanResource`, `JenisLayananResource`, `ActivityResource` dikecualikan lewat `filament-shield.exclude.resources`; (3) izin halaman/widget dimatikan (`entities.pages/widgets = false`); (4) aturan inti berbasis ROLE di kode, bukan permission (BR-05/33, log hanya dilihat Super Admin dan tidak bisa diubah/dihapus siapa pun). `UserPolicy.php` dan `RolePolicy.php` dikelola Shield: JANGAN diedit. Tes `KondisiStartupTest` meniru kondisi startup.
 - Shield: `define_via_gate=false` (tidak ada bypass Gate otomatis untuk super_admin).
 - Perubahan status HANYA lewat `AlurStatusService::ubah()`; status awal lewat `catatAwal()`. Tanpa petugas (sistem) hanya boleh PerluPerbaikan -> DalamPemeriksaan.
 - Master data (JenisLayanan, Persyaratan) hanya untuk admin/super_admin lewat `JenisLayananPolicy`/`PersyaratanPolicy` (berbasis role, tidak bisa dilonggarkan lewat UI).
@@ -98,6 +98,7 @@ Legenda: [x] terbukti (ada keluaran uji/konfirmasi pengguna), [~] kode sudah dib
 - [x] Pencatatan aktivitas FR-51: 12 skenario lulus (`uji_audit.php`)
 
 **Infrastruktur dan keamanan**
+- [~] Kondisi startup kontainer: `LogAktivitasPolicy`, `HakAksesSeeder` tanpa izin log, `KondisiStartupTest`, izin halaman/widget dimatikan. Menunggu bukti restart (izin total 12, SA tidak bisa ubah/hapus log).
 - [x] Batas unggah Nginx `client_max_body_size 64M` (teruji: halaman 200, unggah 25 MB lolos Nginx (405 dari Laravel), 70 MB ditolak 413)
 - [x] `DatabaseSeeder` mematikan log saat seeding (teruji: 0 baris log setelah `migrate:fresh --seed`)
 - [x] Proteksi 4 role inti (event `Role::deleting/updating` di `AppServiceProvider`; teruji tinker: hapus dan ganti nama ditolak, peran non-inti bebas). Uji lewat halaman Role di browser belum dikonfirmasi.
@@ -125,7 +126,7 @@ Legenda: [x] terbukti (ada keluaran uji/konfirmasi pengguna), [~] kode sudah dib
 
 ## 9. Langkah Berikutnya
 Acuan: `docs/TRACEABILITY.md` (matriks FR/BR/NFR terhadap kode dan bukti).
-1. Konfirmasi restart kontainer tidak menimpa kebijakan (hasil `git status`, `dca test`, izin per peran).
+1. Konfirmasi perbaikan kondisi startup (restart kontainer lalu izin total 12, super_admin tidak bisa ubah/hapus log, `dca test` hijau).
 2. `RegistrasiService` (FR-01) dan `AutentikasiService` (FR-02/03/32) beserta tesnya.
 3. Akses permohonan milik sendiri (FR-11/43, BR-02): scope + kebijakan bernama eksplisit.
 4. Konsistensi status-riwayat (NFR-29), pencadangan dan pemulihan (NFR-18), persiapan produksi dan README (NFR-19/25), pengukuran kinerja (NFR-07/08/10).
