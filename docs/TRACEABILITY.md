@@ -25,17 +25,17 @@
 | FR-17 | Daftar permohonan masuk (petugas) | ✅ | `PanelAksesTest` (akses), uji browser (filter dan tab) |
 | FR-18 | Rincian permohonan, isian, dokumen | ✅ | `PanelAksesTest` (detail, relation manager) |
 | FR-19 | Status Dalam Pemeriksaan | ✅ | `AlurStatusTest` |
-| FR-20 | Catat hasil verifikasi | 🟡 | Hanya dokumen yang dicatat (Sesuai/Tidak Sesuai). Kesesuaian data isian diputuskan lewat tombol Proses atau Minta Perbaikan. Perlu keputusan. |
+| FR-20 | Catat hasil verifikasi | 🟡 | Dokumen: tombol Sesuai/Tidak Sesuai teruji lewat antarmuka, dan tersembunyi bagi administrator (`UiPermohonanTest`). Kesesuaian data isian diputuskan lewat tombol Proses atau Minta Perbaikan. Perlu keputusan. |
 | FR-21 | Perlu Perbaikan + keterangan | ✅ | `AlurStatusTest` (catatan wajib) |
 | FR-22 | Periksa ulang hasil perbaikan | ✅ | `PengajuanTest` (dokumen pengganti kembali Belum Diperiksa) |
 | FR-23 | Status Diproses setelah sesuai | ✅ | `AlurStatusTest` (diblokir bila dokumen belum Sesuai) |
 | FR-24 | Status Siap Diambil | ✅ | `AlurStatusTest` |
-| FR-25 | Petugas melihat riwayat status | 🟡 | `RiwayatRelationManager` ada, isinya belum dites. |
+| FR-25 | Petugas melihat riwayat status | ✅ | `UiPermohonanTest` (riwayat tampil beserta pelaku dan "Sistem"), `AlurStatusTest` |
 | FR-26 | Rekap untuk petugas | ✅ | `PanelAksesTest` (laporan tampil) |
-| FR-27 | Admin kelola akun masyarakat dan petugas | 🟡 | Aturan: `HakAksesTest`. Form Filament: uji browser saja. |
+| FR-27 | Admin kelola akun masyarakat dan petugas | ✅ | `UiAkunTest` (buat petugas dan masyarakat, ubah, nonaktifkan, hapus ditolak bila punya permohonan, validasi NIK), `HakAksesTest` |
 | FR-28 | Admin tetapkan peran (masyarakat/petugas) | ✅ | `HakAksesTest` |
-| FR-29 | Kelola jenis layanan | 🟡 | Policy: `HakAksesTest`, `PanelAksesTest`. Form dan aturan hapus: uji browser saja. |
-| FR-30 | Kelola persyaratan | 🟡 | Idem. Bentuk isian dinamis teruji di `PengajuanTest`. |
+| FR-29 | Kelola jenis layanan | ✅ | `UiMasterDataTest` (buat, validasi kode, kode terkunci, aktif/nonaktif, hapus ditolak bila punya permohonan), `HakAksesTest` |
+| FR-30 | Kelola persyaratan | ✅ | `UiMasterDataTest` (isian pilihan, urutan otomatis, validasi, hapus ditolak bila dipakai), `PengajuanTest` (bentuk isian dinamis) |
 | FR-31 | Rekap untuk admin | ✅ | `PanelAksesTest` |
 | FR-32 | Identifikasi peran, batasi akses | 🧩 | `PanelAksesTest`, `AutentikasiTest` (tujuan per peran). Pengalihan di halaman Blade belum. |
 | FR-33 | Validasi isian wajib | ✅ | `PengajuanTest` |
@@ -51,10 +51,10 @@
 | FR-43 | Batasi akses data dan dokumen | ✅ | `AksesPermohonanTest`, `DokumenAksesTest` (dokumen mengikuti kebijakan permohonan). |
 | FR-44 | Rekap per layanan atau status | ✅ | `PanelAksesTest` |
 | FR-45 | Super Admin menjalankan fungsi Administrator | ✅ | `HakAksesTest`, `PanelAksesTest` |
-| FR-46 | Super Admin kelola akun Administrator | 🟡 | Aturan: `HakAksesTest`. Form: uji browser. |
+| FR-46 | Super Admin kelola akun Administrator | ✅ | `UiAkunTest` (Super Admin membuat Administrator; Administrator tidak bisa), `HakAksesTest` |
 | FR-47 | Kelola peran dan permission | 🟡 | Halaman Peran Shield, uji browser. Peran inti: `PeranIntiTest`. |
 | FR-48 | Beri dan cabut peran Admin/Super Admin | ✅ | `HakAksesTest` |
-| FR-49 | Super Admin melihat log aktivitas | 🟡 | `LogAktivitasPolicy` (role-locked): `AuditTest`, `KondisiStartupTest`. Halaman log belum dites HTTP. |
+| FR-49 | Super Admin melihat log aktivitas | ✅ | `UiHalamanKhususTest` (halaman log: 200 Super Admin, 403 selainnya), `LogAktivitasPolicy`: `AuditTest`, `KondisiStartupTest` |
 | FR-50 | Minimal satu Super Admin aktif | ✅ | `HakAksesTest` |
 | FR-51 | Catat aktivitas penting | ✅ | `AuditTest`. Log tidak dapat diubah/dihapus siapa pun, walau Super Admin memegang seluruh permission: `KondisiStartupTest`. |
 
@@ -87,7 +87,7 @@
 | NFR-07/08/10 | Kinerja (95% ≤ 3 dtk, ≤ 5 dtk, 20 pengguna) | ❌ | Belum diukur. |
 | NFR-09 | Umpan balik unggahan | 🧩 | Blade/Livewire. |
 | NFR-11..15 | Bahasa Indonesia, navigasi, responsif | 🧩 | Panel berbahasa Indonesia. Halaman masyarakat belum. |
-| NFR-16 | Gagal simpan tidak tampil sebagai sukses | 🟡 | Transaksi dan pembersihan berkas ada, belum ada tes kegagalan. |
+| NFR-16 | Gagal simpan tidak tampil sebagai sukses | ✅ | `KegagalanSimpanTest` (pengajuan dan perbaikan yang gagal tidak meninggalkan permohonan, dokumen, atau berkas; dokumen lama tetap utuh; pengajuan dapat diulang) |
 | NFR-17 | Kirim ganda tidak menggandakan | ✅ | `PengajuanTest` |
 | NFR-18 | Pencadangan dan pemulihan | ✅ | `scripts/uji-pemulihan.sh` di MariaDB sungguhan: 19 dari 19 tabel identik (jumlah baris + checksum), 11 berkas identik (SHA-256), aplikasi lolos pada data pulihan. Skrip: `cadangkan.sh`, `pulihkan.sh`. Panduan: `docs/PEMULIHAN.md`. |
 | NFR-19 | Pesan gangguan tanpa rincian teknis | ✅ | `HalamanGalatTest` (403/404/419/429/500/503 berbahasa Indonesia; galat sistem tanpa rincian teknis saat debug mati). Di produksi pastikan lewat `dca app:periksa-produksi` (`ProduksiTest`). |
@@ -104,7 +104,7 @@
 ## Celah backend yang tersisa (urut prioritas)
 1. Dokumentasi cara menjalankan (NFR-25): README khusus proyek, panduan, bersihkan sisa boilerplate di `.env.example`.
 2. Pengukuran kinerja (NFR-07/08/10).
-3. Tes tambahan: halaman Log Aktivitas (FR-49), riwayat terlihat (FR-25), kegagalan simpan (NFR-16).
-4. Keputusan bersama: cakupan FR-20 (verifikasi data isian).
+3. Keputusan bersama: cakupan FR-20 (verifikasi data isian) dan konfirmasi persyaratan kondisional dengan desa.
+4. Halaman Peran (Shield, FR-47) belum dites lewat antarmuka; "tidak ada unduhan surat" (BR-19..23) belum ada tesnya.
 5. Halaman Blade masyarakat (menutup seluruh status 🧩).
 6. Sebelum produksi: jalankan `dca app:periksa-produksi` sampai SIAP (ganti kata sandi root basis data, jangan buka port 13306 keluar, hapus akun demo, HTTPS dan cookie aman).

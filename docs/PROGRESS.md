@@ -26,6 +26,7 @@
 - Alur: `dcm Model` -> isi migration -> `dca migrate` -> `dcf Model`. `dcf` hanya setelah migration DAN seeder final.
 - Nama tabel tidak jamak dan ditulis eksplisit di model (`protected $table`).
 - Alias terminal: `dcu`, `dcd`, `dca <artisan>` (artisan di kontainer PHP, contoh `dca tinker --execute="..."`), `dci`, `dcp "pesan"`, `dcm`, `dcf`, `dcr`.
+- Tes UI Filament (`tests/Feature/Ui*Test.php`): `Livewire::test(Halaman::class)` setelah `actingAs()` dan `Filament::setCurrentPanel(Filament::getPanel('admin'))`. Asersi visibilitas tombol WAJIB memakai model yang sudah di-`refresh()` (model basi memberi hasil keliru, terbukti). Relation manager: `['ownerRecord' => ..., 'pageClass' => ...]`. Aksi header: `callTableAction(CreateAction::class, data: [...])`. Satu `dca test` penuh sekitar 5 menit (tes Livewire 1 sampai 12 detik); untuk satu berkas: `dca test --filter='NamaBerkasTest'`. Filter `--filter` mencocokkan NAMA TES/KELAS, bukan nama berkas.
 - Kebiasaan terminal (zsh + oh-my-zsh): JANGAN menempel blok besar langsung ke terminal. `url-quote-magic` menyisipkan backslash setelah URL (merusak kode, terbukti: `\]\)\;`), dan `#!` atau `<!` memicu history expansion sehingga baris sisa dieksekusi dan terminal bisa tertutup. Jalur aman: tempel ke berkas lewat editor (`touch x.sh; code x.sh`), lalu `bash x.sh; rm x.sh`, dan cek md5 bila diberikan. Perbaikan permanen: `DISABLE_MAGIC_FUNCTIONS="true"` di `~/.zshrc` (berlaku di terminal BARU).
 - Skrip bash: (1) jangan memakai `grep -q` di pipeline ber-`pipefail` (SIGPIPE membuat pipeline dianggap gagal secara acak), pakai `grep ... >/dev/null`; (2) `docker compose exec` meneruskan stdin dan MENELAN masukan loop `while read`: selalu beri `</dev/null` atau baca loop lewat file descriptor terpisah, dan cocokkan jumlah item yang diproses dengan jumlah yang seharusnya; (3) docker tiruan di sandbox harus meniru perilaku asli (termasuk menghabiskan stdin), kalau tidak bug seperti ini lolos.
 - BACKEND DULU, tampilan (Blade) belakangan. Aturan bisnis ada di service dan dibuktikan dulu lewat skrip/test.
@@ -109,7 +110,7 @@ Legenda: [x] terbukti (ada keluaran uji/konfirmasi pengguna), [~] kode sudah dib
 
 **Belum dikerjakan**
 - [x] Logika akun masyarakat: `RegistrasiService` (FR-01), `AutentikasiService` (FR-02/03/32; pesan gagal seragam, batas 5 percobaan/menit), `PastikanAkunAktif`, `AksesPermohonanPolicy` + `Permohonan::milik()` (FR-11/43, BR-02). Teruji: `RegistrasiTest`, `AutentikasiTest`, `AksesPermohonanTest`.
-- [x] Test Pest permanen: `dca test` hijau, 194 tes lulus (623 assertion): pengajuan/perbaikan, alur status, audit, hak akses BR-05/30..33, peran inti, seeder, akses dokumen, akses panel HTTP, laporan, kebijakan akun, kondisi startup, registrasi, autentikasi, akses permohonan, konsistensi status, halaman galat, pemeriksa produksi. Helper: `tests/Support/Skenario.php`.
+- [x] Test Pest permanen: `dca test` hijau, 254 tes lulus (1019 assertion). Lapisan service/kebijakan: pengajuan, perbaikan, alur status, audit, hak akses BR-05/30..33, peran inti, seeder, akses dokumen, registrasi, autentikasi, akses permohonan, konsistensi status, halaman galat, pemeriksa produksi, kondisi startup. Lapisan UI Filament (Livewire): `UiPermohonanTest`, `UiMasterDataTest`, `UiAkunTest`, `UiHalamanKhususTest`; kegagalan simpan: `KegagalanSimpanTest`. Helper: `tests/Support/Skenario.php`.
 - [~] Rapikan menu: Role dan Log Aktivitas masuk grup "Pengaturan" (override `src/lang/vendor/*/{en,id}`), Overlook dan `LatestAccessLogs` dibuang, `JenisLayananPolicy` + `PersyaratanPolicy` (master data hanya admin/super admin; sebelumnya petugas bisa mengaksesnya). Belum dikonfirmasi.
 - [ ] Audit kelengkapan FR-01..51 dan BR terhadap kode (matriks `docs/TRACEABILITY.md`)
 - [ ] Stub controller kosong (`JenisLayananController`, `PermohonanController`) dipakai atau dihapus (tergantung rancangan Blade)
@@ -131,11 +132,11 @@ Legenda: [x] terbukti (ada keluaran uji/konfirmasi pengguna), [~] kode sudah dib
 - Desain Figma perlu disesuaikan: batas 2 MB -> 5 MB, hapus teks Dukcapil/notifikasi, tambah kolom alamat di registrasi, ganti "SIPADES", halaman Super Admin belum ada desain.
 
 ## 9. Langkah Berikutnya
-Acuan: `docs/TRACEABILITY.md` (matriks FR/BR/NFR terhadap kode dan bukti). Posisi: 56 terbukti, 12 sebagian, 16 menunggu Blade, 2 belum (NFR-25 dokumentasi, NFR-07/08/10 kinerja).
-1. Tes lapisan UI Filament (Livewire) untuk bagian yang baru teruji di browser: FR-25 (riwayat), FR-27/29/30/46 (form akun, layanan, persyaratan), FR-49 (halaman Log Aktivitas), aksi status petugas, kegagalan simpan (NFR-16). Berkas: `tests/Feature/Ui*Test.php`, `KegagalanSimpanTest.php`.
-2. Dokumentasi (NFR-25): `docs/PANDUAN.md` + README khusus proyek, bersihkan sisa boilerplate di `.env.example` (butuh `cat .env.example` root dan `ls src/.env.example`).
-3. Pengukuran kinerja (NFR-07/08/10). Keputusan FR-20 (verifikasi data isian) dan konfirmasi persyaratan kondisional dengan desa.
-4. Setelah backend mantap: halaman Blade masyarakat yang memanggil `RegistrasiService`, `AutentikasiService`, `PengajuanService`, `AlurStatusService`.
+Acuan: `docs/TRACEABILITY.md` (matriks FR/BR/NFR terhadap kode dan bukti). Posisi: 63 terbukti, 5 sebagian (FR-20, FR-47, BR-19..23, NFR-06, NFR-23), 16 menunggu Blade, 2 belum (NFR-25 dokumentasi, NFR-07/08/10 kinerja).
+1. Dokumentasi (NFR-25): `docs/PANDUAN.md` + README khusus proyek, bersihkan sisa boilerplate di `.env.example` (butuh `cat .env.example` root dan `ls src/.env.example`).
+2. Pengukuran kinerja (NFR-07/08/10). Keputusan FR-20 (verifikasi data isian) dan konfirmasi persyaratan kondisional dengan desa.
+3. Tes UI halaman Peran Shield (FR-47) dan tes "tidak ada unduhan surat" (BR-19..23).
+4. Halaman Blade masyarakat yang memanggil `RegistrasiService`, `AutentikasiService`, `PengajuanService`, `AlurStatusService`.
 
 ## 10. Prompt Lanjut untuk Claude Baru
 "Lanjutkan proyek Desa Bojong dari file PROGRESS.md ini. Jangan mulai dari awal dan jangan ubah keputusan di bagian 4.
