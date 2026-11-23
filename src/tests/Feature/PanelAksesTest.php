@@ -52,22 +52,22 @@ it('mengatur akses halaman panel sesuai peran', function (string $peran, string 
     'kelola akun super admin' => ['superadmin', 'filament.admin.resources.users.index', 200],
 ]);
 
-it('petugas dapat membuka detail permohonan, administrator dan super admin tidak', function () {
+// Satu pengguna per tes: AuthenticateSession menolak session bila pengguna berganti di tengah tes.
+it('detail permohonan hanya dapat dibuka petugas', function (string $peran, int $status) {
     $p = Skenario::ajukanSiu();
 
-    $this->actingAs(Skenario::user('petugas'))
+    $respons = $this->actingAs(Skenario::user($peran))
         ->get(route('filament.admin.resources.permohonan.view', ['record' => $p->id]))
-        ->assertOk()
-        ->assertSee($p->nomor_permohonan);
+        ->assertStatus($status);
 
-    $this->actingAs(Skenario::user('admin'))
-        ->get(route('filament.admin.resources.permohonan.view', ['record' => $p->id]))
-        ->assertForbidden();
-
-    $this->actingAs(Skenario::user('superadmin'))
-        ->get(route('filament.admin.resources.permohonan.view', ['record' => $p->id]))
-        ->assertForbidden();
-});
+    if ($status === 200) {
+        $respons->assertSee($p->nomor_permohonan);
+    }
+})->with([
+    'petugas' => ['petugas', 200],
+    'admin' => ['admin', 403],
+    'super admin' => ['superadmin', 403],
+]);
 
 it('administrator tidak dapat membuka akun super admin lewat URL langsung', function () {
     $sa = Skenario::user('superadmin');
