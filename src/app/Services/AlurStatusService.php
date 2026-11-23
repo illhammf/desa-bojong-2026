@@ -13,7 +13,11 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * Satu-satunya pintu perubahan status permohonan (PRD 7.7, FR-41, FR-42).
- * $oleh = null berarti perubahan otomatis oleh sistem (pengajuan, pengiriman perbaikan).
+ *
+ * $oleh = Petugas  : perubahan manual oleh petugas.
+ * $oleh = null     : perubahan otomatis oleh sistem. Hanya diizinkan untuk
+ *                    Perlu Perbaikan -> Dalam Pemeriksaan (pemohon mengirim perbaikan).
+ *                    Status awal "Diajukan" dicatat lewat catatAwal().
  */
 class AlurStatusService
 {
@@ -23,6 +27,18 @@ class AlurStatusService
         'diproses' => 'Data dan dokumen dinyatakan sesuai.',
         'siap_diambil' => 'Surat fisik siap diambil di Balai Desa Bojong.',
     ];
+
+    /** Mencatat riwayat pertama saat permohonan berhasil diajukan (FR-38, FR-42). */
+    public function catatAwal(Permohonan $permohonan): void
+    {
+        RiwayatStatus::create([
+            'permohonan_id' => $permohonan->id,
+            'petugas_id' => null,
+            'status' => StatusPermohonan::Diajukan,
+            'keterangan' => self::KETERANGAN_DEFAULT['diajukan'],
+            'waktu_perubahan' => now(),
+        ]);
+    }
 
     public function ubah(Permohonan $permohonan, StatusPermohonan $tujuan, ?User $oleh = null, ?string $keterangan = null): Permohonan
     {
@@ -41,6 +57,10 @@ class AlurStatusService
 
             if (! $asal->bolehKe($tujuan)) {
                 throw new DomainException("Status tidak dapat diubah dari {$asal->getLabel()} ke {$tujuan->getLabel()}.");
+            }
+
+            if ($oleh === null && ! ($asal === StatusPermohonan::PerluPerbaikan && $tujuan === StatusPermohonan::DalamPemeriksaan)) {
+                throw new DomainException('Perubahan status ini hanya dapat dilakukan oleh Petugas Desa.');
             }
 
             if ($oleh !== null && $asal === StatusPermohonan::PerluPerbaikan) {

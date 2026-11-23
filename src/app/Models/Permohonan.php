@@ -48,6 +48,6 @@ class Permohonan extends Model
 
     public function riwayat(): HasMany
     {
-        return $this->hasMany(RiwayatStatus::class, 'permohonan_id')->orderBy('waktu_perubahan');
+        return $this->hasMany(RiwayatStatus::class, 'permohonan_id')->orderBy('waktu_perubahan')->orderBy('id');
     }
 }
