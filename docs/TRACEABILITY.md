@@ -89,7 +89,7 @@
 | NFR-11..15 | Bahasa Indonesia, navigasi, responsif | 🧩 | Panel berbahasa Indonesia. Halaman masyarakat belum. |
 | NFR-16 | Gagal simpan tidak tampil sebagai sukses | 🟡 | Transaksi dan pembersihan berkas ada, belum ada tes kegagalan. |
 | NFR-17 | Kirim ganda tidak menggandakan | ✅ | `PengajuanTest` |
-| NFR-18 | Pencadangan dan pemulihan | ✅ | `scripts/cadangkan.sh`, `scripts/pulihkan.sh`, `scripts/uji-pemulihan.sh` (tabel dan berkas pulihan identik dengan data aktif, aplikasi lolos pada data pulihan). Panduan: `docs/PEMULIHAN.md`. |
+| NFR-18 | Pencadangan dan pemulihan | ✅ | `scripts/uji-pemulihan.sh` di MariaDB sungguhan: 19 dari 19 tabel identik (jumlah baris + checksum), 11 berkas identik (SHA-256), aplikasi lolos pada data pulihan. Skrip: `cadangkan.sh`, `pulihkan.sh`. Panduan: `docs/PEMULIHAN.md`. |
 | NFR-19 | Pesan gangguan tanpa rincian teknis | ✅ | `HalamanGalatTest` (403/404/419/429/500/503 berbahasa Indonesia; galat sistem tanpa rincian teknis saat debug mati). Di produksi pastikan lewat `dca app:periksa-produksi` (`ProduksiTest`). |
 | NFR-20..22 | Kompatibilitas peramban dan layar | 🧩 | Menunggu Blade. |
 | NFR-23 | Pemisahan tanggung jawab | 🟡 | Service/policy terpisah. Tidak diuji otomatis. |
