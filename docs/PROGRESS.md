@@ -30,7 +30,7 @@
 - Status [x] hanya bila ada bukti (keluaran uji). Kode yang baru diberikan = [~].
 - Filament: resource di `src/app/Filament/Admin/Resources`, halaman list memakai "s" (`ListJenisLayanans`), relation manager di `.../NamaResource/RelationManagers`, halaman khusus di `src/app/Filament/Admin/Pages`, widget di `.../Widgets`.
 - Panel: `app/Providers/Filament/AdminPanelProvider.php` (id `admin`, path `/admin`, SPA, plugin Shield, Themes, AuthUIEnhancer, Overlook, EditProfile, LightSwitch). Grup menu: Pelayanan, Master Data, Pengaturan, Administration (nama grup harus sama persis dengan string di resource).
-- Uji skrip (rollback otomatis): `dca tinker --execute="require base_path('database/uji_pengajuan.php');"` (15 skenario) dan `.../uji_audit.php` (12 skenario). Pest: `dca test` (SQLite memori; baru 2 contoh bawaan).
+- Test Pest: `dca test` (SQLite memori, tiap test menjalankan `$this->seed()`; env `testing` melewati `PermohonanSeeder`). Helper: `tests/Support/Skenario.php`. Skrip uji lama (`uji_pengajuan.php`, `uji_audit.php`) sudah digantikan suite Pest dan dihapus.
 - Test Pest: `dca test` (SQLite memori, tiap test menjalankan `$this->seed()`; env `testing` melewati `PermohonanSeeder`). Helper: `tests/Support/Skenario.php`.
 - Akun demo (seeder): superadmin/admin/petugas/warga `@demo.test`, kata sandi `password` (hanya lokal).
 
@@ -51,7 +51,7 @@
 - Role lewat Spatie/Shield: `masyarakat`, `petugas`, `admin`, `super_admin`. Tidak ada kolom `role` di `users`. Satu akun = satu role. Super Admin tanpa tabel profil.
 - Empat role inti tidak boleh dihapus/diganti nama (event model di `AppServiceProvider`).
 - Aturan kewenangan TERKUNCI DI KODE (bukan permission yang bisa diubah lewat UI): BR-05/BR-33 (`AlurStatusService`, `PermohonanResource::bolehKelola`), BR-30/31/32 (`PenggunaService`, `UserPolicy`). Permission Shield hanya untuk akun, role, log aktivitas (`HakAksesSeeder`, bersifat menambah). Pengaturan Situs, Laporan, Daftar Permohonan memakai pengecekan role.
-- Kebijakan akun = `App\Policies\AkunPolicy` yang DIDAFTARKAN EKSPLISIT (`Gate::policy`) agar tidak tertimpa generator Shield. Jangan mengandalkan `UserPolicy.php`.
+- Startup kontainer menjalankan `shield:generate` (terlihat di `docker compose logs php`): berkas `*Policy.php` milik resource yang tidak dikecualikan ditimpa setiap start. Karena itu kebijakan penting memakai nama non-standar dan didaftarkan eksplisit di `AppServiceProvider`: `AkunPolicy` (User), `KelolaLayananPolicy` (JenisLayanan), `PersyaratanPolicy`. `PermohonanResource` dan `JenisLayananResource` dikecualikan lewat `filament-shield.exclude.resources`. `UserPolicy.php`, `ActivityPolicy.php`, `RolePolicy.php` dikelola Shield: JANGAN diedit.
 - Shield: `define_via_gate=false` (tidak ada bypass Gate otomatis untuk super_admin).
 - Perubahan status HANYA lewat `AlurStatusService::ubah()`; status awal lewat `catatAwal()`. Tanpa petugas (sistem) hanya boleh PerluPerbaikan -> DalamPemeriksaan.
 - Master data (JenisLayanan, Persyaratan) hanya untuk admin/super_admin lewat `JenisLayananPolicy`/`PersyaratanPolicy` (berbasis role, tidak bisa dilonggarkan lewat UI).
@@ -103,7 +103,7 @@ Legenda: [x] terbukti (ada keluaran uji/konfirmasi pengguna), [~] kode sudah dib
 - [x] Proteksi 4 role inti (event `Role::deleting/updating` di `AppServiceProvider`; teruji tinker: hapus dan ganti nama ditolak, peran non-inti bebas). Uji lewat halaman Role di browser belum dikonfirmasi.
 
 **Belum dikerjakan**
-- [~] Test Pest permanen (`tests/Feature/*Test.php` + `tests/Support/Skenario.php`): 111 dari 113 lulus. Dua yang gagal = BR-30 dan BR-31 pada policy akun (UserPolicy ternyata berperilaku seperti stub bawaan Shield). Perbaikan: `AkunPolicy` didaftarkan eksplisit di `AppServiceProvider` + tes `KebijakanAkunTest`. Menunggu `dca test` hijau.
+- [x] Test Pest permanen: `dca test` hijau (114 tes lulus, 364 assertion) + `ShieldAmanTest`. `tests/Feature/*Test.php` + `tests/Support/Skenario.php`: pengajuan/perbaikan, alur status, audit, hak akses BR-05/30..33, peran inti, seeder, akses dokumen, akses panel HTTP, laporan, kebijakan akun.
 - [~] Rapikan menu: Role dan Log Aktivitas masuk grup "Pengaturan" (override `src/lang/vendor/*/{en,id}`), Overlook dan `LatestAccessLogs` dibuang, `JenisLayananPolicy` + `PersyaratanPolicy` (master data hanya admin/super admin; sebelumnya petugas bisa mengaksesnya). Belum dikonfirmasi.
 - [ ] Audit kelengkapan FR-01..51 dan BR terhadap kode (matriks `docs/TRACEABILITY.md`)
 - [ ] Stub controller kosong (`JenisLayananController`, `PermohonanController`) dipakai atau dihapus (tergantung rancangan Blade)
@@ -124,11 +124,13 @@ Legenda: [x] terbukti (ada keluaran uji/konfirmasi pengguna), [~] kode sudah dib
 - Desain Figma perlu disesuaikan: batas 2 MB -> 5 MB, hapus teks Dukcapil/notifikasi, tambah kolom alamat di registrasi, ganti "SIPADES", halaman Super Admin belum ada desain.
 
 ## 9. Langkah Berikutnya
-1. Jalankan `dca test` dan perbaiki sampai hijau (tempel keluaran bila ada yang gagal).
-2. Konfirmasi di browser: grup menu "Pengaturan" (Kelola Akun, Peran, Log Aktivitas, Pengaturan Situs), petugas tidak melihat menu Master Data, halaman Laporan tampil.
-3. Matriks FR/BR -> kode -> bukti (`docs/TRACEABILITY.md`) untuk mencari yang masih bolong.
-4. Keputusan sisa backend: stub controller kosong, pembatasan percobaan login, kebijakan kata sandi, persiapan produksi (APP_DEBUG, akun demo, pencadangan).
-5. Setelah backend mantap: halaman Blade masyarakat yang memanggil `PengajuanService` dan `AlurStatusService`.
+Acuan: `docs/TRACEABILITY.md` (matriks FR/BR/NFR terhadap kode dan bukti).
+1. Konfirmasi restart kontainer tidak menimpa kebijakan (hasil `git status`, `dca test`, izin per peran).
+2. `RegistrasiService` (FR-01) dan `AutentikasiService` (FR-02/03/32) beserta tesnya.
+3. Akses permohonan milik sendiri (FR-11/43, BR-02): scope + kebijakan bernama eksplisit.
+4. Konsistensi status-riwayat (NFR-29), pencadangan dan pemulihan (NFR-18), persiapan produksi dan README (NFR-19/25), pengukuran kinerja (NFR-07/08/10).
+5. Tes tambahan: kata sandi ter-hash, halaman Log Aktivitas, riwayat terlihat, kegagalan simpan. Konfirmasi grup menu di browser.
+6. Setelah backend mantap: halaman Blade masyarakat yang memanggil service.
 
 ## 10. Prompt Lanjut untuk Claude Baru
 "Lanjutkan proyek Desa Bojong dari file PROGRESS.md ini. Jangan mulai dari awal dan jangan ubah keputusan di bagian 4.
