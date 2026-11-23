@@ -98,7 +98,7 @@ Legenda: [x] terbukti (ada keluaran uji/konfirmasi pengguna), [~] kode sudah dib
 - [x] Pencatatan aktivitas FR-51: 12 skenario lulus (`uji_audit.php`)
 
 **Infrastruktur dan keamanan**
-- [x] Kondisi startup kontainer teruji di DB sungguhan setelah restart: generator hanya memproses Role dan User, `izin total 12` (admin 5, super_admin 12), Super Admin dapat MELIHAT log tetapi tidak dapat mengubah/menghapusnya. `LogAktivitasPolicy`, `KondisiStartupTest`, izin ubah/hapus log tidak lagi dibuat. 123 tes lulus. Catatan terbuka: log startup masih menampilkan tabel "Page Permissions" walau DB 0 izin page/widget (cek lewat `dca shield:generate --all --panel=admin`).
+- [x] Kondisi startup kontainer teruji di DB sungguhan setelah restart: generator hanya memproses Role dan User, `izin total 12` (admin 5, super_admin 12), Super Admin dapat MELIHAT log tetapi tidak dapat mengubah/menghapusnya. `LogAktivitasPolicy`, `KondisiStartupTest`, izin ubah/hapus log tidak lagi dibuat. 123 tes lulus. Tabel "Page/Widget Permissions" di log startup hanya tampilan: `shield:generate --all` tidak menyimpan izin page/widget (terbukti: 12 izin sebelum dan sesudah, page/widget = 0).
 - [x] Batas unggah Nginx `client_max_body_size 64M` (teruji: halaman 200, unggah 25 MB lolos Nginx (405 dari Laravel), 70 MB ditolak 413)
 - [x] `DatabaseSeeder` mematikan log saat seeding (teruji: 0 baris log setelah `migrate:fresh --seed`)
 - [x] Proteksi 4 role inti (event `Role::deleting/updating` di `AppServiceProvider`; teruji tinker: hapus dan ganti nama ditolak, peran non-inti bebas). Uji lewat halaman Role di browser belum dikonfirmasi.
@@ -128,7 +128,6 @@ Legenda: [x] terbukti (ada keluaran uji/konfirmasi pengguna), [~] kode sudah dib
 ## 9. Langkah Berikutnya
 Acuan: `docs/TRACEABILITY.md` (matriks FR/BR/NFR terhadap kode dan bukti).
 1. Konfirmasi `dca test` hijau untuk `RegistrasiTest`, `AutentikasiTest`, `AksesPermohonanTest`; lalu perbarui matriks (FR-01/02/03/11/32/43, BR-02, NFR-03 menjadi terbukti).
-2. Selesaikan catatan terbuka izin page/widget (hasil `shield:generate --all` manual).
 3. Konsistensi status-riwayat (NFR-29), pencadangan dan pemulihan (NFR-18), persiapan produksi dan README (NFR-19/25), pengukuran kinerja (NFR-07/08/10).
 4. Tes tambahan: halaman Log Aktivitas, riwayat terlihat, kegagalan simpan.
 5. Setelah backend mantap: halaman Blade masyarakat yang memanggil `RegistrasiService`, `AutentikasiService`, `PengajuanService`.
