@@ -31,6 +31,7 @@
 - Filament: resource di `src/app/Filament/Admin/Resources`, halaman list memakai "s" (`ListJenisLayanans`), relation manager di `.../NamaResource/RelationManagers`, halaman khusus di `src/app/Filament/Admin/Pages`, widget di `.../Widgets`.
 - Panel: `app/Providers/Filament/AdminPanelProvider.php` (id `admin`, path `/admin`, SPA, plugin Shield, Themes, AuthUIEnhancer, Overlook, EditProfile, LightSwitch). Grup menu: Pelayanan, Master Data, Pengaturan, Administration (nama grup harus sama persis dengan string di resource).
 - Uji skrip (rollback otomatis): `dca tinker --execute="require base_path('database/uji_pengajuan.php');"` (15 skenario) dan `.../uji_audit.php` (12 skenario). Pest: `dca test` (SQLite memori; baru 2 contoh bawaan).
+- Test Pest: `dca test` (SQLite memori, tiap test menjalankan `$this->seed()`; env `testing` melewati `PermohonanSeeder`). Helper: `tests/Support/Skenario.php`.
 - Akun demo (seeder): superadmin/admin/petugas/warga `@demo.test`, kata sandi `password` (hanya lokal).
 
 ## 4. Keputusan yang Dipertahankan
@@ -52,6 +53,7 @@
 - Aturan kewenangan TERKUNCI DI KODE (bukan permission yang bisa diubah lewat UI): BR-05/BR-33 (`AlurStatusService`, `PermohonanResource::bolehKelola`), BR-30/31/32 (`PenggunaService`, `UserPolicy`). Permission Shield hanya untuk akun, role, log aktivitas (`HakAksesSeeder`, bersifat menambah). Pengaturan Situs, Laporan, Daftar Permohonan memakai pengecekan role.
 - Shield: `define_via_gate=false` (tidak ada bypass Gate otomatis untuk super_admin).
 - Perubahan status HANYA lewat `AlurStatusService::ubah()`; status awal lewat `catatAwal()`. Tanpa petugas (sistem) hanya boleh PerluPerbaikan -> DalamPemeriksaan.
+- Master data (JenisLayanan, Persyaratan) hanya untuk admin/super_admin lewat `JenisLayananPolicy`/`PersyaratanPolicy` (berbasis role, tidak bisa dilonggarkan lewat UI).
 - Pengajuan dan perbaikan HANYA lewat `PengajuanService` (halaman Blade cukup memanggilnya).
 - Log aktivitas (FR-51): logger otomatis Filament Logger DIMATIKAN (`config/filament-logger.php`). Pencatatan eksplisit: trait `LogsActivity` (User, JenisLayanan, Persyaratan, PengaturanSitus), listener `CatatAutentikasi`, `AlurStatusService`, `PenggunaService`. Log name: Autentikasi (login/logout/login_gagal), Akun (+event `peran`), Layanan, Persyaratan, Pengaturan, Permohonan (event `diajukan`, `status` dengan dari/ke). Kata sandi tidak dicatat. Hanya Super Admin yang bisa melihat (permission `view_any_activity`), tanpa permission ubah/hapus. Seeding tidak dicatat.
 - `APP_LOCALE=id`, `APP_TIMEZONE=Asia/Jakarta`.
@@ -93,14 +95,14 @@ Legenda: [x] terbukti (ada keluaran uji/konfirmasi pengguna), [~] kode sudah dib
 - [x] `PengajuanService` ajukan + perbaiki: 15 skenario lulus (`uji_pengajuan.php`). Catatan: berkas masih palsu (`UploadedFile::fake`), unggah sungguhan baru teruji saat ada halamannya.
 - [x] Pencatatan aktivitas FR-51: 12 skenario lulus (`uji_audit.php`)
 
-**Dalam verifikasi**
-- [~] Nginx `client_max_body_size 64M` (uji 502 tadi tidak konklusif; ulang: 25 MB lolos, 70 MB 413)
-- [~] `DatabaseSeeder` mematikan log saat seeding (harapan: 0 baris log setelah `migrate:fresh --seed`)
-- [~] Proteksi 4 role inti (event `Role::deleting/updating` di `AppServiceProvider`) + uji di browser (hapus role petugas lewat halaman Role)
+**Infrastruktur dan keamanan**
+- [x] Batas unggah Nginx `client_max_body_size 64M` (teruji: halaman 200, unggah 25 MB lolos Nginx (405 dari Laravel), 70 MB ditolak 413)
+- [x] `DatabaseSeeder` mematikan log saat seeding (teruji: 0 baris log setelah `migrate:fresh --seed`)
+- [x] Proteksi 4 role inti (event `Role::deleting/updating` di `AppServiceProvider`; teruji tinker: hapus dan ganti nama ditolak, peran non-inti bebas). Uji lewat halaman Role di browser belum dikonfirmasi.
 
 **Belum dikerjakan**
-- [ ] Test Pest permanen (konversi 2 skrip uji + hak akses BR-05/30/31/32/33 + akses dokumen + laporan)
-- [ ] Rapikan menu: grup halaman Role (Shield) dan Log Aktivitas (Filament Logger) ke "Pengaturan", buang widget/halaman bawaan boilerplate yang tak terpakai (`LatestAccessLogs`, Overlook)
+- [~] Test Pest permanen: `tests/Feature/*Test.php` + `tests/Support/Skenario.php` (pengajuan/perbaikan, alur status, audit, hak akses/BR-30..33, peran inti, seeder, akses dokumen, akses panel HTTP + laporan). Kode sudah diberikan, hasil `dca test` belum dikonfirmasi.
+- [~] Rapikan menu: Role dan Log Aktivitas masuk grup "Pengaturan" (override `src/lang/vendor/*/{en,id}`), Overlook dan `LatestAccessLogs` dibuang, `JenisLayananPolicy` + `PersyaratanPolicy` (master data hanya admin/super admin; sebelumnya petugas bisa mengaksesnya). Belum dikonfirmasi.
 - [ ] Audit kelengkapan FR-01..51 dan BR terhadap kode (matriks `docs/TRACEABILITY.md`)
 - [ ] Stub controller kosong (`JenisLayananController`, `PermohonanController`) dipakai atau dihapus (tergantung rancangan Blade)
 - [ ] Halaman Blade masyarakat (registrasi, login satu halaman, beranda, layanan, formulir dinamis, status, perbaikan)
@@ -120,10 +122,10 @@ Legenda: [x] terbukti (ada keluaran uji/konfirmasi pengguna), [~] kode sudah dib
 - Desain Figma perlu disesuaikan: batas 2 MB -> 5 MB, hapus teks Dukcapil/notifikasi, tambah kolom alamat di registrasi, ganti "SIPADES", halaman Super Admin belum ada desain.
 
 ## 9. Langkah Berikutnya
-1. Konfirmasi: uji Nginx dua arah, seeding senyap (log = 0), proteksi role inti (tinker + browser), `uji_audit` 12 dan `uji_pengajuan` 15 masih lulus.
-2. Konversi skrip uji menjadi test Pest di `tests/Feature` (SQLite memori) + test hak akses dan akses dokumen; target `dca test` hijau.
-3. Rapikan menu dan widget bawaan (butuh isi `src/lang/vendor/filament-logger` dan `filament-shield`).
-4. Audit FR/BR terhadap kode (`docs/TRACEABILITY.md`), konfirmasi Laporan di browser.
+1. Jalankan `dca test` dan perbaiki sampai hijau (tempel keluaran bila ada yang gagal).
+2. Konfirmasi di browser: grup menu "Pengaturan" (Kelola Akun, Peran, Log Aktivitas, Pengaturan Situs), petugas tidak melihat menu Master Data, halaman Laporan tampil.
+3. Matriks FR/BR -> kode -> bukti (`docs/TRACEABILITY.md`) untuk mencari yang masih bolong.
+4. Keputusan sisa backend: stub controller kosong, pembatasan percobaan login, kebijakan kata sandi, persiapan produksi (APP_DEBUG, akun demo, pencadangan).
 5. Setelah backend mantap: halaman Blade masyarakat yang memanggil `PengajuanService` dan `AlurStatusService`.
 
 ## 10. Prompt Lanjut untuk Claude Baru
