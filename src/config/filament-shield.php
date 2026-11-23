@@ -78,7 +78,7 @@ return [
             'FilamentInfoWidget',
         ],
 
-        'resources' => [],
+        'resources' => ['PermohonanResource', 'JenisLayananResource'],
     ],
 
     'discovery' => [

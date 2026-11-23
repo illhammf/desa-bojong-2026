@@ -7,9 +7,10 @@ use App\Models\User;
 
 /**
  * Master data layanan hanya dikelola Administrator dan Super Admin (FR-29).
- * Petugas Desa tidak berwenang. Berbasis role agar tidak bisa dilonggarkan lewat UI.
+ * Berbasis role dan didaftarkan eksplisit di AppServiceProvider. Sengaja bukan "JenisLayananPolicy":
+ * nama itu dipakai generator Shield yang menimpa berkasnya setiap kontainer start.
  */
-class JenisLayananPolicy
+class KelolaLayananPolicy
 {
     private function boleh(User $user): bool
     {
