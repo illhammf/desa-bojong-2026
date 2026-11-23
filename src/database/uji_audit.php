@@ -221,4 +221,4 @@ try {
 }
 
 echo "\nHasil: {$lulus} lulus, {$gagal} gagal.\n";
-echo 'Rollback: log aktivitas ' . Activity::count() . " baris tersisa (hanya dari seeder)\n";
+echo 'Rollback: log aktivitas ' . Activity::count() . " baris tersisa\n";

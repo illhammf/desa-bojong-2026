@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Spatie\Activitylog\ActivityLogStatus;
 
 class DatabaseSeeder extends Seeder
 {
@@ -11,18 +12,26 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->call([
-            RoleSeeder::class,
-            HakAksesSeeder::class,
-            UserSeeder::class,
-            JenisLayananSeeder::class,
-            PersyaratanSeeder::class,
-            PengaturanSitusSeeder::class,
-        ]);
+        // Data awal bukan tindakan pengguna, jadi tidak dicatat pada log aktivitas (FR-51).
+        $status = app(ActivityLogStatus::class);
+        $status->disable();
 
-        // Data contoh hanya untuk pengembangan lokal
-        if (app()->environment('local')) {
-            $this->call(PermohonanSeeder::class);
+        try {
+            $this->call([
+                RoleSeeder::class,
+                HakAksesSeeder::class,
+                UserSeeder::class,
+                JenisLayananSeeder::class,
+                PersyaratanSeeder::class,
+                PengaturanSitusSeeder::class,
+            ]);
+
+            // Data contoh hanya untuk pengembangan lokal
+            if (app()->environment('local')) {
+                $this->call(PermohonanSeeder::class);
+            }
+        } finally {
+            $status->enable();
         }
     }
 }
