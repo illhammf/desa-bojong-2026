@@ -6,9 +6,9 @@
 ## Fungsional (FR)
 | Kode | Kebutuhan | Status | Bukti / Catatan |
 |---|---|---|---|
-| FR-01 | Registrasi masyarakat (NIK 16 digit unik, data wajib) | ❌ | Belum ada `RegistrasiService`. `UserResource` hanya untuk pengelola. |
-| FR-02 | Login email + kata sandi, tolak akun nonaktif | 🟡 | Panel: `PanelAksesTest` (nonaktif ditolak). Login satu halaman untuk masyarakat belum ada. |
-| FR-03 | Logout, halaman terproteksi tertutup | 🟡 | Panel Filament. Logout sisi Blade belum ada. |
+| FR-01 | Registrasi masyarakat (NIK 16 digit unik, data wajib) | 🧩 | `RegistrasiTest` (NIK, email, nomor seluler, kata sandi, atomik, peran terkunci). Halaman Blade belum. |
+| FR-02 | Login email + kata sandi, tolak akun nonaktif | 🧩 | `AutentikasiTest` (pesan seragam, nonaktif ditolak, batas percobaan), `AksesPermohonanTest` (nonaktif di tengah sesi). Halaman login Blade belum. |
+| FR-03 | Logout, halaman terproteksi tertutup | 🧩 | `AutentikasiTest` (keluar, tercatat log), `DokumenAksesTest` (tamu diarahkan ke login). Tombol logout Blade belum. |
 | FR-04 | Daftar 20 layanan | 🧩 | Data: `SeederTest`. Tampilan Blade belum. |
 | FR-05 | Tampilkan persyaratan (isian/dokumen) | 🧩 | `PengajuanService::persyaratanAktif()`. Blade belum. |
 | FR-06 | Pilih layanan lalu ke formulir | 🧩 | Blade belum. |
@@ -16,7 +16,7 @@
 | FR-08 | Isi data termasuk alasan pengajuan | ✅ | `PengajuanTest` |
 | FR-09 | Unggah dokumen (jpg/jpeg/png/pdf, maks 5 MB) | ✅ | `PengajuanTest` (tepat 5 MB lolos, 5121 KB dan .exe ditolak). Indikator unggah = Blade. |
 | FR-10 | Kirim permohonan setelah lengkap | ✅ | `PengajuanTest` |
-| FR-11 | Daftar permohonan milik sendiri | ❌ | Belum ada scope/kebijakan akses pemilik untuk Blade. |
+| FR-11 | Daftar permohonan milik sendiri | 🧩 | `Permohonan::milik()` + `AksesPermohonanPolicy`: `AksesPermohonanTest`. Halaman Blade belum. |
 | FR-12 | Nomor pengajuan dan info dasar | 🧩 | Nomor: `PengajuanTest`. Tampilan belum. |
 | FR-13 | Status terkini dan riwayat | 🧩 | Data: `AlurStatusTest`. Tampilan belum. |
 | FR-14 | Keterangan perbaikan dari petugas | 🧩 | Kolom `catatan_petugas`: `AlurStatusTest`. Tampilan belum. |
@@ -37,7 +37,7 @@
 | FR-29 | Kelola jenis layanan | 🟡 | Policy: `HakAksesTest`, `PanelAksesTest`. Form dan aturan hapus: uji browser saja. |
 | FR-30 | Kelola persyaratan | 🟡 | Idem. Bentuk isian dinamis teruji di `PengajuanTest`. |
 | FR-31 | Rekap untuk admin | ✅ | `PanelAksesTest` |
-| FR-32 | Identifikasi peran, batasi akses | 🟡 | Panel: `PanelAksesTest`. Pengalihan per peran di login Blade belum ada. |
+| FR-32 | Identifikasi peran, batasi akses | 🧩 | `PanelAksesTest`, `AutentikasiTest` (tujuan per peran). Pengalihan di halaman Blade belum. |
 | FR-33 | Validasi isian wajib | ✅ | `PengajuanTest` |
 | FR-34 | Cek dokumen wajib | ✅ | `PengajuanTest` |
 | FR-35 | Tolak pengajuan tidak lengkap, sebut bagiannya | ✅ | `PengajuanTest` |
@@ -48,7 +48,7 @@
 | FR-40 | Validasi ulang, kembali ke Dalam Pemeriksaan, nomor tetap | ✅ | `PengajuanTest` |
 | FR-41 | Batasi alur status dan kewenangan | ✅ | `AlurStatusTest` (8 transisi tidak sah) |
 | FR-42 | Catat riwayat status | ✅ | `AlurStatusTest`, `PengajuanTest` |
-| FR-43 | Batasi akses data dan dokumen | 🟡 | Dokumen: `DokumenAksesTest`. Halaman permohonan pemilik (Blade) belum punya kebijakan. |
+| FR-43 | Batasi akses data dan dokumen | ✅ | `AksesPermohonanTest`, `DokumenAksesTest` (dokumen mengikuti kebijakan permohonan). |
 | FR-44 | Rekap per layanan atau status | ✅ | `PanelAksesTest` |
 | FR-45 | Super Admin menjalankan fungsi Administrator | ✅ | `HakAksesTest`, `PanelAksesTest` |
 | FR-46 | Super Admin kelola akun Administrator | 🟡 | Aturan: `HakAksesTest`. Form: uji browser. |
@@ -62,7 +62,7 @@
 | Kode | Status | Bukti / Catatan |
 |---|---|---|
 | BR-01 | ✅ | `PengajuanTest` (hanya masyarakat aktif) |
-| BR-02 | 🟡 | Dokumen: `DokumenAksesTest`. Permohonan di Blade belum. |
+| BR-02 | ✅ | `AksesPermohonanTest`, `DokumenAksesTest` |
 | BR-03 | ✅ | `AlurStatusTest` |
 | BR-04 | ✅ | `HakAksesTest` (master data, akun, laporan) |
 | BR-05 | ✅ | `AlurStatusTest`, `PanelAksesTest` |
@@ -80,7 +80,7 @@
 | Kode | Kebutuhan | Status | Bukti / Catatan |
 |---|---|---|---|
 | NFR-01/02 | Akses setelah login, pembatasan peran | ✅ | `PanelAksesTest`, `DokumenAksesTest` |
-| NFR-03 | Kata sandi di-hash | 🟡 | Cast `hashed`. Belum ada tes. |
+| NFR-03 | Kata sandi di-hash | ✅ | `RegistrasiTest` (hash terverifikasi, tidak masuk log) |
 | NFR-04/30 | Isolasi data, dokumen privat | ✅ | `DokumenAksesTest`, `PengajuanTest` |
 | NFR-05 | Validasi masukan dan berkas | ✅ | `PengajuanTest` |
 | NFR-06 | HTTPS | 🟡 | Lokal HTTPS. Produksi menunggu sertifikat. |
@@ -98,16 +98,13 @@
 | NFR-26 | Git | ✅ | Repo GitHub. |
 | NFR-27 | Referensi valid | ✅ | Kunci asing + `PengajuanTest` |
 | NFR-28 | Nomor unik | ✅ | Indeks unik + `PengajuanTest` |
-| NFR-29 | Status konsisten dengan riwayat | ❌ | Belum ada tes invarian. Perubahan langsung `Permohonan::update(['status'])` masih mungkin lewat kode. |
+| NFR-29 | Status konsisten dengan riwayat | ✅ | `KonsistensiTest`; pengaman model menolak ubah status di luar service; `dca app:periksa-konsistensi` untuk data nyata. |
 | Tambahan | Pencatatan aktivitas | ✅ | `AuditTest` |
 
 ## Celah backend yang tersisa (urut prioritas)
-1. `RegistrasiService` (FR-01): NIK 16 digit unik, data wajib, peran masyarakat saja.
-2. `AutentikasiService` (FR-02/03/32): login satu halaman, tolak nonaktif, pembatasan percobaan, pengalihan per peran.
-3. Akses permohonan milik sendiri (FR-11/43, BR-02): scope dan kebijakan bernama eksplisit untuk Blade.
-4. Konsistensi status dan riwayat (NFR-29): tes invarian dan keputusan pengaman perubahan status langsung.
-5. Pencadangan dan pemulihan (NFR-18).
-6. Persiapan produksi dan README (NFR-19/25): APP_DEBUG, halaman galat, akun demo, kata sandi.
-7. Pengukuran kinerja (NFR-07/08/10).
-8. Tes tambahan: kata sandi ter-hash (NFR-03), halaman Log Aktivitas (FR-49), riwayat terlihat (FR-25), kegagalan simpan (NFR-16).
-9. Keputusan bersama: cakupan FR-20 (verifikasi data isian).
+1. Pencadangan dan pemulihan (NFR-18).
+2. Persiapan produksi dan README (NFR-19/25): halaman galat berbahasa Indonesia, APP_DEBUG, sisa boilerplate di `.env.example`, akun demo, kata sandi.
+3. Pengukuran kinerja (NFR-07/08/10).
+4. Tes tambahan: halaman Log Aktivitas (FR-49), riwayat terlihat (FR-25), kegagalan simpan (NFR-16).
+5. Keputusan bersama: cakupan FR-20 (verifikasi data isian).
+6. Halaman Blade masyarakat (menutup seluruh status 🧩).

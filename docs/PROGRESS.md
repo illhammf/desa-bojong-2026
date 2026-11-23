@@ -93,6 +93,7 @@ Legenda: [x] terbukti (ada keluaran uji/konfirmasi pengguna), [~] kode sudah dib
 - [~] `LaporanPage`: route dan query terbukti, tampilan di browser belum dikonfirmasi. Ekspor = Versi 1.1.
 
 **Logika bisnis (service)**
+- [x] Konsistensi status-riwayat (NFR-29): pengaman model `Permohonan::denganIzinUbahStatus()` (hanya `AlurStatusService` boleh ubah status, selainnya `LogicException`), perintah `dca app:periksa-konsistensi`, `KonsistensiTest`. Menyiapkan status di tes: `Skenario::paksaStatus()` (query builder).
 - [x] `AlurStatusService` (teruji tinker: admin ditolak, transisi tidak sah ditolak, Diproses diblokir bila dokumen belum Sesuai)
 - [x] `PengajuanService` ajukan + perbaiki: 15 skenario lulus (`uji_pengajuan.php`). Catatan: berkas masih palsu (`UploadedFile::fake`), unggah sungguhan baru teruji saat ada halamannya.
 - [x] Pencatatan aktivitas FR-51: 12 skenario lulus (`uji_audit.php`)
@@ -104,7 +105,7 @@ Legenda: [x] terbukti (ada keluaran uji/konfirmasi pengguna), [~] kode sudah dib
 - [x] Proteksi 4 role inti (event `Role::deleting/updating` di `AppServiceProvider`; teruji tinker: hapus dan ganti nama ditolak, peran non-inti bebas). Uji lewat halaman Role di browser belum dikonfirmasi.
 
 **Belum dikerjakan**
-- [~] `RegistrasiService` (FR-01), `AutentikasiService` (FR-02/03/32, pesan gagal seragam, batas 5 percobaan/menit), `PastikanAkunAktif` (middleware), `AksesPermohonanPolicy` + `Permohonan::milik()` (FR-11/43, BR-02), `DokumenController` lewat Gate. Tes: `RegistrasiTest`, `AutentikasiTest`, `AksesPermohonanTest`. Kode sudah diberikan, hasil `dca test` belum dikonfirmasi.
+- [x] Logika akun masyarakat: `RegistrasiService` (FR-01), `AutentikasiService` (FR-02/03/32; pesan gagal seragam, batas 5 percobaan/menit), `PastikanAkunAktif`, `AksesPermohonanPolicy` + `Permohonan::milik()` (FR-11/43, BR-02). Teruji: `RegistrasiTest`, `AutentikasiTest`, `AksesPermohonanTest`.
 - [x] Test Pest permanen: `dca test` hijau (114 tes lulus, 364 assertion) + `ShieldAmanTest`. `tests/Feature/*Test.php` + `tests/Support/Skenario.php`: pengajuan/perbaikan, alur status, audit, hak akses BR-05/30..33, peran inti, seeder, akses dokumen, akses panel HTTP, laporan, kebijakan akun.
 - [~] Rapikan menu: Role dan Log Aktivitas masuk grup "Pengaturan" (override `src/lang/vendor/*/{en,id}`), Overlook dan `LatestAccessLogs` dibuang, `JenisLayananPolicy` + `PersyaratanPolicy` (master data hanya admin/super admin; sebelumnya petugas bisa mengaksesnya). Belum dikonfirmasi.
 - [ ] Audit kelengkapan FR-01..51 dan BR terhadap kode (matriks `docs/TRACEABILITY.md`)
@@ -127,10 +128,10 @@ Legenda: [x] terbukti (ada keluaran uji/konfirmasi pengguna), [~] kode sudah dib
 
 ## 9. Langkah Berikutnya
 Acuan: `docs/TRACEABILITY.md` (matriks FR/BR/NFR terhadap kode dan bukti).
-1. Konfirmasi `dca test` hijau untuk `RegistrasiTest`, `AutentikasiTest`, `AksesPermohonanTest`; lalu perbarui matriks (FR-01/02/03/11/32/43, BR-02, NFR-03 menjadi terbukti).
-3. Konsistensi status-riwayat (NFR-29), pencadangan dan pemulihan (NFR-18), persiapan produksi dan README (NFR-19/25), pengukuran kinerja (NFR-07/08/10).
-4. Tes tambahan: halaman Log Aktivitas, riwayat terlihat, kegagalan simpan.
-5. Setelah backend mantap: halaman Blade masyarakat yang memanggil `RegistrasiService`, `AutentikasiService`, `PengajuanService`.
+1. Pencadangan dan pemulihan (NFR-18): skrip cadang + uji pemulihan ke database sementara.
+2. Persiapan produksi dan README (NFR-19/25): halaman galat berbahasa Indonesia, bersihkan sisa boilerplate (`djambred`) di `.env.example`, README khusus proyek, checklist produksi.
+3. Pengukuran kinerja (NFR-07/08/10). Tes tambahan: halaman Log Aktivitas, riwayat terlihat, kegagalan simpan.
+4. Setelah backend mantap: halaman Blade masyarakat yang memanggil `RegistrasiService`, `AutentikasiService`, `PengajuanService`, `AlurStatusService`.
 
 ## 10. Prompt Lanjut untuk Claude Baru
 "Lanjutkan proyek Desa Bojong dari file PROGRESS.md ini. Jangan mulai dari awal dan jangan ubah keputusan di bagian 4.
