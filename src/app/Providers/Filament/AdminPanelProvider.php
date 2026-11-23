@@ -50,14 +50,10 @@ class AdminPanelProvider extends PanelProvider
             ->discoverPages(in: app_path('Filament/Admin/Pages'), for: 'App\\Filament\\Admin\\Pages')
             ->discoverClusters(in: app_path('Filament/Admin/Clusters'), for: 'App\\Filament\\Admin\\Clusters')
             ->discoverWidgets(in: app_path('Filament/Admin/Widgets'), for: 'App\\Filament\\Admin\\Widgets')
-            ->widgets([
-                \Awcodes\Overlook\Widgets\OverlookWidget::class,
-            ])
             ->navigationGroups([
                 NavigationGroup::make()->label('Pelayanan'),
                 NavigationGroup::make()->label('Master Data'),
                 NavigationGroup::make()->label('Pengaturan'),
-                NavigationGroup::make()->label('Administration'),
             ])
             ->userMenuItems([
                 'profile' => MenuItem::make()
@@ -96,10 +92,6 @@ class AdminPanelProvider extends PanelProvider
                     ->enabledOn([
                         'auth.login',
                         'auth.password',
-                    ]),
-                \Awcodes\Overlook\OverlookPlugin::make()
-                    ->includes([
-                        \App\Filament\Admin\Resources\UserResource::class,
                     ]),
                 \Joaopaulolndev\FilamentEditProfile\FilamentEditProfilePlugin::make()
                     ->slug('my-profile')

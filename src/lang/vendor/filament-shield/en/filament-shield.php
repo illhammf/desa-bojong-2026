@@ -31,8 +31,8 @@ return [
     |--------------------------------------------------------------------------
     */
 
-    'nav.group' => 'Administration',
-    'nav.role.label' => 'Roles',
+    'nav.group' => 'Pengaturan',
+    'nav.role.label' => 'Peran',
     'nav.role.icon' => 'heroicon-o-shield-check',
     'resource.label.role' => 'Role',
     'resource.label.roles' => 'Roles',
