@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Models\User;
+use App\Policies\AkunPolicy;
 use App\Policies\ActivityPolicy;
 use App\Services\PenggunaService;
 use Filament\Actions\MountableAction;
@@ -32,6 +34,8 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Gate::policy(Activity::class, ActivityPolicy::class);
+        // Eksplisit agar tidak tertimpa berkas UserPolicy hasil generate Shield.
+        Gate::policy(User::class, AkunPolicy::class);
 
         // Empat peran inti dipakai langsung oleh kode (canAccessPanel, AlurStatusService, PenggunaService).
         // Menghapus atau mengganti namanya akan merusak sistem, jadi dilarang dari mana pun.
