@@ -37,3 +37,8 @@ it('tidak ada berkas kebijakan hasil generate Shield untuk resource yang dikecua
         expect(file_exists(app_path("Policies/{$nama}.php")))->toBeFalse();
     }
 });
+
+it('mendaftarkan kebijakan akses permohonan secara eksplisit', function () {
+    expect(\Illuminate\Support\Facades\Gate::getPolicyFor(\App\Models\Permohonan::class))
+        ->toBeInstanceOf(\App\Policies\AksesPermohonanPolicy::class);
+});

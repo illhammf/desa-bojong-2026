@@ -3,8 +3,10 @@
 namespace App\Providers;
 
 use App\Models\JenisLayanan;
+use App\Models\Permohonan;
 use App\Models\Persyaratan;
 use App\Models\User;
+use App\Policies\AksesPermohonanPolicy;
 use App\Policies\AkunPolicy;
 use App\Policies\KelolaLayananPolicy;
 use App\Policies\PersyaratanPolicy;
@@ -42,6 +44,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(User::class, AkunPolicy::class);
         Gate::policy(JenisLayanan::class, KelolaLayananPolicy::class);
         Gate::policy(Persyaratan::class, PersyaratanPolicy::class);
+        Gate::policy(Permohonan::class, AksesPermohonanPolicy::class);
 
         // Empat peran inti dipakai langsung oleh kode (canAccessPanel, AlurStatusService, PenggunaService).
         // Menghapus atau mengganti namanya akan merusak sistem, jadi dilarang dari mana pun.

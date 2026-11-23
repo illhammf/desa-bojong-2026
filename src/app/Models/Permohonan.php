@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\StatusPermohonan;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -20,6 +21,12 @@ class Permohonan extends Model
         'status' => StatusPermohonan::class,
         'tanggal_pengajuan' => 'datetime',
     ];
+
+    /** Permohonan milik pengguna tertentu (FR-11, BR-02). */
+    public function scopeMilik(Builder $query, User $user): Builder
+    {
+        return $query->where('permohonan.user_id', $user->id);
+    }
 
     public function masyarakat(): BelongsTo
     {

@@ -24,7 +24,7 @@ Route::get('/', function () {
 
 // Akses dokumen privat: pemilik permohonan atau petugas (PRD 7.16)
 \Illuminate\Support\Facades\Route::get('/dokumen/{dokumen}', [\App\Http\Controllers\DokumenController::class, 'tampil'])
-    ->middleware('auth')
+    ->middleware(['auth', \App\Http\Middleware\PastikanAkunAktif::class])
     ->name('dokumen.tampil');
 
 // Sementara: pengunjung yang belum login diarahkan ke login panel (nanti diganti login Blade)

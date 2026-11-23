@@ -98,12 +98,13 @@ Legenda: [x] terbukti (ada keluaran uji/konfirmasi pengguna), [~] kode sudah dib
 - [x] Pencatatan aktivitas FR-51: 12 skenario lulus (`uji_audit.php`)
 
 **Infrastruktur dan keamanan**
-- [~] Kondisi startup kontainer: `LogAktivitasPolicy`, `HakAksesSeeder` tanpa izin log, `KondisiStartupTest`, izin halaman/widget dimatikan. Menunggu bukti restart (izin total 12, SA tidak bisa ubah/hapus log).
+- [x] Kondisi startup kontainer teruji di DB sungguhan setelah restart: generator hanya memproses Role dan User, `izin total 12` (admin 5, super_admin 12), Super Admin dapat MELIHAT log tetapi tidak dapat mengubah/menghapusnya. `LogAktivitasPolicy`, `KondisiStartupTest`, izin ubah/hapus log tidak lagi dibuat. 123 tes lulus. Catatan terbuka: log startup masih menampilkan tabel "Page Permissions" walau DB 0 izin page/widget (cek lewat `dca shield:generate --all --panel=admin`).
 - [x] Batas unggah Nginx `client_max_body_size 64M` (teruji: halaman 200, unggah 25 MB lolos Nginx (405 dari Laravel), 70 MB ditolak 413)
 - [x] `DatabaseSeeder` mematikan log saat seeding (teruji: 0 baris log setelah `migrate:fresh --seed`)
 - [x] Proteksi 4 role inti (event `Role::deleting/updating` di `AppServiceProvider`; teruji tinker: hapus dan ganti nama ditolak, peran non-inti bebas). Uji lewat halaman Role di browser belum dikonfirmasi.
 
 **Belum dikerjakan**
+- [~] `RegistrasiService` (FR-01), `AutentikasiService` (FR-02/03/32, pesan gagal seragam, batas 5 percobaan/menit), `PastikanAkunAktif` (middleware), `AksesPermohonanPolicy` + `Permohonan::milik()` (FR-11/43, BR-02), `DokumenController` lewat Gate. Tes: `RegistrasiTest`, `AutentikasiTest`, `AksesPermohonanTest`. Kode sudah diberikan, hasil `dca test` belum dikonfirmasi.
 - [x] Test Pest permanen: `dca test` hijau (114 tes lulus, 364 assertion) + `ShieldAmanTest`. `tests/Feature/*Test.php` + `tests/Support/Skenario.php`: pengajuan/perbaikan, alur status, audit, hak akses BR-05/30..33, peran inti, seeder, akses dokumen, akses panel HTTP, laporan, kebijakan akun.
 - [~] Rapikan menu: Role dan Log Aktivitas masuk grup "Pengaturan" (override `src/lang/vendor/*/{en,id}`), Overlook dan `LatestAccessLogs` dibuang, `JenisLayananPolicy` + `PersyaratanPolicy` (master data hanya admin/super admin; sebelumnya petugas bisa mengaksesnya). Belum dikonfirmasi.
 - [ ] Audit kelengkapan FR-01..51 dan BR terhadap kode (matriks `docs/TRACEABILITY.md`)
@@ -126,12 +127,11 @@ Legenda: [x] terbukti (ada keluaran uji/konfirmasi pengguna), [~] kode sudah dib
 
 ## 9. Langkah Berikutnya
 Acuan: `docs/TRACEABILITY.md` (matriks FR/BR/NFR terhadap kode dan bukti).
-1. Konfirmasi perbaikan kondisi startup (restart kontainer lalu izin total 12, super_admin tidak bisa ubah/hapus log, `dca test` hijau).
-2. `RegistrasiService` (FR-01) dan `AutentikasiService` (FR-02/03/32) beserta tesnya.
-3. Akses permohonan milik sendiri (FR-11/43, BR-02): scope + kebijakan bernama eksplisit.
-4. Konsistensi status-riwayat (NFR-29), pencadangan dan pemulihan (NFR-18), persiapan produksi dan README (NFR-19/25), pengukuran kinerja (NFR-07/08/10).
-5. Tes tambahan: kata sandi ter-hash, halaman Log Aktivitas, riwayat terlihat, kegagalan simpan. Konfirmasi grup menu di browser.
-6. Setelah backend mantap: halaman Blade masyarakat yang memanggil service.
+1. Konfirmasi `dca test` hijau untuk `RegistrasiTest`, `AutentikasiTest`, `AksesPermohonanTest`; lalu perbarui matriks (FR-01/02/03/11/32/43, BR-02, NFR-03 menjadi terbukti).
+2. Selesaikan catatan terbuka izin page/widget (hasil `shield:generate --all` manual).
+3. Konsistensi status-riwayat (NFR-29), pencadangan dan pemulihan (NFR-18), persiapan produksi dan README (NFR-19/25), pengukuran kinerja (NFR-07/08/10).
+4. Tes tambahan: halaman Log Aktivitas, riwayat terlihat, kegagalan simpan.
+5. Setelah backend mantap: halaman Blade masyarakat yang memanggil `RegistrasiService`, `AutentikasiService`, `PengajuanService`.
 
 ## 10. Prompt Lanjut untuk Claude Baru
 "Lanjutkan proyek Desa Bojong dari file PROGRESS.md ini. Jangan mulai dari awal dan jangan ubah keputusan di bagian 4.
