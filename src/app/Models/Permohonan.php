@@ -10,6 +10,30 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Permohonan extends Model
 {
+    /** Hanya AlurStatusService yang boleh mengubah status (NFR-29). */
+    private static bool $izinUbahStatus = false;
+
+    public static function denganIzinUbahStatus(callable $aksi): mixed
+    {
+        $lama = static::$izinUbahStatus;
+        static::$izinUbahStatus = true;
+
+        try {
+            return $aksi();
+        } finally {
+            static::$izinUbahStatus = $lama;
+        }
+    }
+
+    protected static function booted(): void
+    {
+        static::updating(function (Permohonan $p) {
+            if ($p->isDirty('status') && ! static::$izinUbahStatus) {
+                throw new \LogicException('Status permohonan hanya dapat diubah melalui AlurStatusService.');
+            }
+        });
+    }
+
     protected $table = 'permohonan';
 
     protected $fillable = [

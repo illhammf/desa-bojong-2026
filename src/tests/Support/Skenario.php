@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Services\AlurStatusService;
 use App\Services\PengajuanService;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Spatie\Activitylog\Models\Activity;
 
@@ -122,6 +123,13 @@ class Skenario
     public static function tandaiSesuai(Permohonan $p): void
     {
         $p->dokumen()->update(['status_verifikasi' => V::Sesuai->value]);
+    }
+
+    /** Mengatur status lewat query builder (melewati pengaman model), khusus menyiapkan skenario tes. */
+    public static function paksaStatus(Permohonan $p, S $status): void
+    {
+        DB::table('permohonan')->where('id', $p->id)->update(['status' => $status->value]);
+        $p->refresh();
     }
 
     /** Kunci galat validasi yang dilempar, atau [] bila tidak ada. */

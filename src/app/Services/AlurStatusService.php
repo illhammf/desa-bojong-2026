@@ -91,7 +91,7 @@ class AlurStatusService
             if ($tujuan === StatusPermohonan::PerluPerbaikan) {
                 $p->catatan_petugas = $keterangan;
             }
-            $p->save();
+            Permohonan::denganIzinUbahStatus(fn () => $p->save());
 
             RiwayatStatus::create([
                 'permohonan_id' => $p->id,

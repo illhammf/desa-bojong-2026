@@ -74,7 +74,7 @@ it('menolak akun petugas yang belum memiliki profil petugas', function () {
 });
 
 it('menolak perubahan status di luar alur', function (S $asal, S $tujuan) {
-    $this->p->update(['status' => $asal]);
+    Skenario::paksaStatus($this->p, $asal);
 
     expect(fn () => $this->alur->ubah($this->p->refresh(), $tujuan, $this->petugas, 'catatan'))
         ->toThrow(DomainException::class);
@@ -122,7 +122,7 @@ it('perubahan otomatis oleh sistem hanya untuk Perlu Perbaikan ke Dalam Pemeriks
     expect(fn () => $this->alur->ubah($this->p, S::DalamPemeriksaan, null))
         ->toThrow(DomainException::class, 'Petugas');
 
-    $this->p->update(['status' => S::Diproses]);
+    Skenario::paksaStatus($this->p, S::Diproses);
     expect(fn () => $this->alur->ubah($this->p->refresh(), S::SiapDiambil, null))
         ->toThrow(DomainException::class, 'Petugas');
 });
