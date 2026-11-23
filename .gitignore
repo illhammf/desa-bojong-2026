@@ -18,3 +18,4 @@ Thumbs.db
 .env
 src/.env
 /cadangan/
+/src/storage/framework/testing/disks/
