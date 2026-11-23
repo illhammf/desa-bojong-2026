@@ -14,6 +14,7 @@ use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Models\Permission;
+use Spatie\Activitylog\Models\Activity;
 use Tests\Support\Skenario;
 
 uses(RefreshDatabase::class);
@@ -115,7 +116,7 @@ it('tidak ada permission verifikasi yang dapat diberikan lewat UI (BR-33)', func
 it('permission akun, peran, dan log dibagi sesuai kewenangan', function () {
     expect($this->admin->can('view_any_user'))->toBeTrue();
     expect($this->admin->can('view_any_role'))->toBeFalse();
-    expect($this->admin->can('view_any_activity'))->toBeFalse();
+    expect($this->admin->can('viewAny', Activity::class))->toBeFalse();
 
     expect($this->sa->can('view_any_user'))->toBeTrue();
     expect($this->sa->can('view_any_role'))->toBeTrue();

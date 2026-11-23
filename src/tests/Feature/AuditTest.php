@@ -144,13 +144,22 @@ it('perubahan status yang ditolak tidak meninggalkan log', function () {
 });
 
 it('log aktivitas hanya dapat dilihat Super Admin dan tidak dapat diubah siapa pun', function () {
+    $log = activity('Uji')->log('contoh');
+
     foreach (['admin', 'petugas', 'warga'] as $peran) {
-        expect(Skenario::user($peran)->can('view_any_activity'))->toBeFalse();
+        $akun = Skenario::user($peran);
+        expect($akun->can('viewAny', Activity::class))->toBeFalse();
+        expect($akun->can('view', $log))->toBeFalse();
     }
 
     $sa = Skenario::user('superadmin');
-    expect($sa->can('view_any_activity'))->toBeTrue();
-    foreach (['create_activity', 'update_activity', 'delete_activity', 'delete_any_activity'] as $izin) {
-        expect($sa->can($izin))->toBeFalse();
+    expect($sa->can('viewAny', Activity::class))->toBeTrue();
+    expect($sa->can('view', $log))->toBeTrue();
+
+    foreach (['update', 'delete', 'forceDelete'] as $aksi) {
+        expect($sa->can($aksi, $log))->toBeFalse();
+    }
+    foreach (['create', 'deleteAny'] as $aksi) {
+        expect($sa->can($aksi, Activity::class))->toBeFalse();
     }
 });

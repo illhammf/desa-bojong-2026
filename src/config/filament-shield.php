@@ -52,8 +52,8 @@ return [
     ],
 
     'entities' => [
-        'pages' => true,
-        'widgets' => true,
+        'pages' => false,
+        'widgets' => false,
         'resources' => true,
         'custom_permissions' => false,
     ],
@@ -78,7 +78,7 @@ return [
             'FilamentInfoWidget',
         ],
 
-        'resources' => ['PermohonanResource', 'JenisLayananResource'],
+        'resources' => ['PermohonanResource', 'JenisLayananResource', 'ActivityResource'],
     ],
 
     'discovery' => [

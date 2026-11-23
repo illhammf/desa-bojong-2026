@@ -8,7 +8,7 @@ use App\Models\User;
 use App\Policies\AkunPolicy;
 use App\Policies\KelolaLayananPolicy;
 use App\Policies\PersyaratanPolicy;
-use App\Policies\ActivityPolicy;
+use App\Policies\LogAktivitasPolicy;
 use App\Services\PenggunaService;
 use Filament\Actions\MountableAction;
 use Filament\Notifications\Livewire\Notifications;
@@ -37,7 +37,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Gate::policy(Activity::class, ActivityPolicy::class);
+        Gate::policy(Activity::class, LogAktivitasPolicy::class);
         // Eksplisit agar tidak tertimpa berkas UserPolicy hasil generate Shield.
         Gate::policy(User::class, AkunPolicy::class);
         Gate::policy(JenisLayanan::class, KelolaLayananPolicy::class);
