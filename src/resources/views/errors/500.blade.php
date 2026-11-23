@@ -1,0 +1,1 @@
+@include('errors.kerangka', ['kode' => 500, 'judul' => 'Terjadi gangguan', 'pesan' => 'Terjadi gangguan pada sistem. Silakan coba lagi beberapa saat lagi. Jika berlanjut, hubungi petugas Balai Desa Bojong.'])
